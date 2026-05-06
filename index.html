@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THN Gold Trader | Terminal Profesional</title>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, increment, collection, addDoc, serverTimestamp, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDynDZa4igTYL-ymnlCzxxdJdvWHtfLJRo",
+            authDomain: "broker-thn-golden-trader.firebaseapp.com",
+            projectId: "broker-thn-golden-trader",
+            storageBucket: "broker-thn-golden-trader.firebasestorage.app",
+            messagingSenderId: "328864360352",
+            appId: "1:328864360352:web:d9bc28f8b701fc958226c5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let modoActual = 'demo';
+        let usuarioData = null;
+        let precioActual = 0.00; 
+        let operacionesAbiertas = [];
+        const tasaUSDLPS = 26.63;
+
+        // ================= MOTOR DE PRECIO =================
+        async function obtenerPrecio() {
+            try {
+                const res = await fetch("https://api.twelvedata.com/price?symbol=XAU/USD&apikey=48ebc1a2cc954cdcbdff7b2829327e49");
+                const data = await res.json();
+                if(data.price) {
+                    precioActual = parseFloat(data.price);
+                    document.getElementById('livePrice').innerText = precioActual.toFixed(2);
+                }
+            } catch (e) {}
+        }
+        setInterval(obtenerPrecio, 5000);
+        setInterval(() => { if (operacionesAbiertas.length > 0) actualizarPanel(); }, 800);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) { cambiarPantalla('trading'); escucharUsuario(user.uid); escucharOps(user.uid); } 
+            else { cambiarPantalla('login'); }
+        });
+
+        function escucharUsuario(uid) {
+            onSnapshot(doc(db, "usuarios", uid), (snap) => {
+                if (snap.exists()) { usuarioData = snap.data(); renderSaldos(); }
+            });
+        }
+
+        function escucharOps(uid) {
+            const q = query(collection(db, "operaciones"), where("uid", "==", uid), where("estado", "==", "abierta"));
+            onSnapshot(q, (snap) => {
+                operacionesAbiertas = [];
+                snap.forEach(d => operacionesAbiertas.push({ id: d.id, ...d.data() }));
+                actualizarPanel();
+            });
+        }
+
+        // ================= TRADING & CIERRE MASIVO =================
+        window.abrirOrden = async (tipo) => {
+            if(modoActual === 'real' && !usuarioData.perfilCompleto) return alert("⚠️ Perfil Incompleto.");
+            const lotaje = parseFloat(document.getElementById('inputLotaje').value);
+            await addDoc(collection(db, "operaciones"), {
+                uid: auth.currentUser.uid, tipo, lotaje, precioEntrada: precioActual,
+                modo: modoActual, estado: "abierta", timestamp: serverTimestamp()
+            });
+        };
+
+        function calcularPL(op) {
+            let diff = op.tipo === 'COMPRA' ? (precioActual - op.precioEntrada) : (op.precioEntrada - precioActual);
+            return diff * (op.lotaje * 100);
+        }
+
+        function actualizarPanel() {
+            const lista = document.getElementById('lista-ops');
+            const panelMasivo = document.getElementById('panel-masivo');
+            lista.innerHTML = "";
+            let total = 0;
+
+            operacionesAbiertas.forEach(op => {
+                let pl = calcularPL(op);
+                total += pl;
+                lista.innerHTML += `
+                    <div class="op-card" onclick="cerrarOrden('${op.id}', ${pl})">
+                        <div class="flex-s">
+                            <span class="${op.tipo}">${op.tipo} ${op.lotaje}</span>
+                            <span class="${pl>=0?'ganancia':'perdida'}"><b>${pl.toFixed(2)}</b></span>
+                        </div>
+                    </div>`;
+            });
+
+            document.getElementById('totalPL').innerText = total.toFixed(2);
+            panelMasivo.style.display = operacionesAbiertas.length > 1 ? 'block' : 'none';
+        }
+
+        window.cierreMasivo = async (soloPositivas) => {
+            const batch = writeBatch(db);
+            const userRef = doc(db, "usuarios", auth.currentUser.uid);
+            let acumulado = 0;
+            let count = 0;
+
+            operacionesAbiertas.forEach(op => {
+                const pl = calcularPL(op);
+                if ((soloPositivas && pl > 0) || (!soloPositivas && pl < 0)) {
+                    const opRef = doc(db, "operaciones", op.id);
+                    batch.update(opRef, { estado: "cerrada", precioCierre: precioActual, ganancia: pl, fechaCierre: serverTimestamp() });
+                    acumulado += pl;
+                    count++;
+                }
+            });
+
+            if(count > 0) {
+                const campo = modoActual === 'real' ? 'saldoReal' : 'saldoDemo';
+                batch.update(userRef, { [campo]: increment(acumulado) });
+                await batch.commit();
+                alert(`Cerradas ${count} posiciones.`);
+            }
+        };
+
+        window.cerrarOrden = async (id, resultado) => {
+            if(!confirm("¿Cerrar posición ahora?")) return;
+            const campo = modoActual === 'real' ? 'saldoReal' : 'saldoDemo';
+            await updateDoc(doc(db, "operaciones", id), { 
+                estado: "cerrada", precioCierre: precioActual, ganancia: resultado, fechaCierre: serverTimestamp() 
+            });
+            await updateDoc(doc(db, "usuarios", auth.currentUser.uid), { [campo]: increment(resultado) });
+        };
+
+        // ================= PERFIL Y FINANZAS =================
+        window.guardarPerfilReal = async () => {
+            await updateDoc(doc(db, "usuarios", auth.currentUser.uid), {
+                dni: perfDNI.value, bac: perfBAC.value, titularBAC: perfTitular.value, perfilCompleto: true
+            });
+            alert("Perfil Verificado ✅"); cerrarModales();
+        };
+
+        window.solicitarRecargaReal = async () => {
+            const usd = parseFloat(recRealUSD.value);
+            const lps = usd * tasaUSDLPS;
+            await addDoc(collection(db, "recargas"), { uid: auth.currentUser.uid, usd, lps, estado: "pendiente", fecha: serverTimestamp() });
+            alert(`Deposite L. ${lps.toLocaleString()} a cuenta THN.`);
+        };
+
+        function renderSaldos() {
+            const saldo = modoActual === 'real' ? usuarioData.saldoReal : usuarioData.saldoDemo;
+            document.getElementById('userSaldo').innerText = "$" + saldo.toLocaleString(undefined, {minimumFractionDigits: 2});
+            document.getElementById('userName').innerText = usuarioData.nombre;
+            document.getElementById('btnDemo').className = modoActual === 'demo' ? 'acc-btn active' : 'acc-btn';
+            document.getElementById('btnReal').className = modoActual === 'real' ? 'acc-btn active' : 'acc-btn';
+        }
+
+        window.loginSocio = async () => {
+            try { await signInWithEmailAndPassword(auth, logEmail.value, logPass.value); } catch(e) { alert("Error"); }
+        };
+
+        window.cambiarPantalla = (id) => {
+            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+            document.getElementById(id + '-page').style.display = 'flex';
+        };
+
+        window.toggleModal = (id) => {
+            const m = document.getElementById(id);
+            m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+        };
+
+        window.cerrarModales = () => document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        window.switchAcc = (m) => { modoActual = m; renderSaldos(); };
+
+    </script>
+
+    <style>
+        :root { --oro: #D4AF37; --fondo: #010812; --panel: #0a192f; --rojo: #ff4d4d; --verde: #2ecc71; --azul: #3498db; }
+        body { margin: 0; background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        .page { display: none; height: 100vh; flex-direction: column; }
+        header { background: var(--panel); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #112240; }
+        .main { display: flex; flex: 1; overflow: hidden; }
+        .sidebar { width: 300px; background: var(--panel); border-left: 1px solid #112240; display: flex; flex-direction: column; padding: 15px; }
+        .acc-switch { display: flex; background: #000; padding: 3px; border-radius: 8px; }
+        .acc-btn { flex:1; border: none; padding: 6px; border-radius: 6px; cursor: pointer; background: transparent; color: #555; font-size: 0.7em; }
+        .acc-btn.active { background: var(--oro); color: black; font-weight: bold; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin: 5px 0; }
+        .btn-gold { background: var(--oro); color: black; }
+        .btn-buy { background: var(--verde); color: white; }
+        .btn-sell { background: var(--rojo); color: white; }
+        .btn-masivo-pos { background: var(--azul); color: white; font-size: 0.7em; margin-bottom: 2px; }
+        .btn-masivo-neg { background: #441111; color: var(--rojo); font-size: 0.7em; border: 1px solid var(--rojo); }
+        input { width: 100%; background: #000; border: 1px solid #222; color: white; padding: 10px; border-radius: 5px; margin: 5px 0; box-sizing: border-box; }
+        .op-card { background: #010812; padding: 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #112240; cursor: pointer; }
+        .COMPRA { color: var(--verde); } .VENTA { color: var(--rojo); }
+        .ganancia { color: var(--azul); font-weight: bold; } .perdida { color: var(--rojo); font-weight: bold; }
+        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); display:none; align-items:center; justify-content:center; z-index:1000; }
+        .modal-content { background: var(--panel); padding: 25px; border-radius: 12px; width: 340px; border: 1px solid var(--oro); }
+        .flex-s { display: flex; justify-content: space-between; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <div id="login-page" class="page">
+        <div style="height:100vh; display:flex; align-items:center; justify-content:center;">
+            <div style="background:var(--panel); padding:40px; border-radius:15px; border:1px solid var(--oro); width:300px; text-align:center;">
+                <h2 style="color:var(--oro);">THN GOLD</h2>
+                <input type="email" id="logEmail" placeholder="Correo">
+                <input type="password" id="logPass" placeholder="Contraseña">
+                <button class="btn btn-gold" onclick="loginSocio()">INGRESAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="trading-page" class="page">
+        <header>
+            <div style="display:flex; align-items:center; gap:15px;">
+                <b style="color:var(--oro); font-size:1.2em;">THN</b>
+                <div class="acc-switch" style="width:120px;">
+                    <button id="btnDemo" class="acc-btn active" onclick="switchAcc('demo')">DEMO</button>
+                    <button id="btnReal" class="acc-btn" onclick="switchAcc('real')">REAL</button>
+                </div>
+            </div>
+            <span id="livePrice" style="color:var(--verde); font-family:monospace; font-weight:bold; font-size:1.3em;">0.00</span>
+            <div style="display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="toggleModal('modal-perfil')">
+                <div style="text-align:right">
+                    <small id="userName" style="color:#888; font-size:0.7em;">...</small><br>
+                    <span id="userSaldo" style="font-weight:bold; color:var(--oro);">$0.00</span>
+                </div>
+                <div style="width:35px; height:35px; background:var(--oro); border-radius:50%; display:flex; align-items:center; justify-content:center; color:black;">👤</div>
+            </div>
+        </header>
+
+        <div class="main">
+            <div style="flex:1; background:#000;">
+                <div id="tradingview_xau" style="height:100%;"></div>
+                <script src="https://s3.tradingview.com/tv.js"></script>
+                <script>
+                    new TradingView.widget({ "autosize": true, "symbol": "OANDA:XAUUSD", "interval": "1", "theme": "dark", "style": "1", "container_id": "tradingview_xau" });
+                </script>
+            </div>
+
+            <div class="sidebar">
+                <small style="color:#555;">LOTES</small>
+                <input type="number" id="inputLotaje" value="0.01" step="0.01">
+                <button class="btn btn-buy" onclick="abrirOrden('COMPRA')">BUY</button>
+                <button class="btn btn-sell" onclick="abrirOrden('VENTA')">SELL</button>
+
+                <!-- BOTONES DE CIERRE MASIVO -->
+                <div id="panel-masivo" style="margin-top:15px; display:none;">
+                    <button class="btn btn-masivo-pos" onclick="cierreMasivo(true)">CERRAR TODOS LOS RENTABLES (AZUL)</button>
+                    <button class="btn btn-masivo-neg" onclick="cierreMasivo(false)">CERRAR TODOS LOS NEGATIVOS (ROJO)</button>
+                </div>
+
+                <h4 style="margin:20px 0 10px 0; font-size:0.8em; color:var(--oro);">POSICIONES</h4>
+                <div id="lista-ops" style="flex:1; overflow-y:auto;"></div>
+                
+                <div style="padding:15px; background:#000; border-radius:8px; text-align:center;">
+                    <small style="color:#555;">BENEFICIO TOTAL</small><br>
+                    <span id="totalPL" style="font-size:1.4em; font-weight:bold;">0.00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PERFIL -->
+    <div id="modal-perfil" class="modal">
+        <div class="modal-content">
+            <div class="flex-s"><h3>PERFIL</h3><span style="cursor:pointer" onclick="cerrarModales()">✕</span></div>
+            <input type="text" id="perfDNI" placeholder="Identidad">
+            <input type="text" id="perfBAC" placeholder="N° Cuenta BAC">
+            <input type="text" id="perfTitular" placeholder="Titular BAC">
+            <button class="btn btn-gold" onclick="guardarPerfilReal()">VERIFICAR</button>
+            <hr style="border:1px solid #222; margin:15px 0;">
+            <h4>RECARGAR REAL</h4>
+            <input type="number" id="recRealUSD" placeholder="Monto USD">
+            <button class="btn btn-buy" onclick="solicitarRecargaReal()">SOLICITAR LPS</button>
+            <button class="btn" style="background:#222; color:white;" onclick="signOut(auth)">Cerrar Sesión</button>
+        </div>
+    </div>
+
+</body>
+</html>
