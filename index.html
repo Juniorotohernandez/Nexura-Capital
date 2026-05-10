@@ -1,284 +1,1190 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THN Gold Trader | Terminal Profesional</title>
-    
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, increment, collection, addDoc, serverTimestamp, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDynDZa4igTYL-ymnlCzxxdJdvWHtfLJRo",
-            authDomain: "broker-thn-golden-trader.firebaseapp.com",
-            projectId: "broker-thn-golden-trader",
-            storageBucket: "broker-thn-golden-trader.firebasestorage.app",
-            messagingSenderId: "328864360352",
-            appId: "1:328864360352:web:d9bc28f8b701fc958226c5"
-        };
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+<title>Nexura Capital - Oficina Virtual</title>
 
-        let modoActual = 'demo';
-        let usuarioData = null;
-        let precioActual = 0.00; 
-        let operacionesAbiertas = [];
-        const tasaUSDLPS = 26.63;
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-        // ================= MOTOR DE PRECIO =================
-        async function obtenerPrecio() {
-            try {
-                const res = await fetch("https://api.twelvedata.com/price?symbol=XAU/USD&apikey=48ebc1a2cc954cdcbdff7b2829327e49");
-                const data = await res.json();
-                if(data.price) {
-                    precioActual = parseFloat(data.price);
-                    document.getElementById('livePrice').innerText = precioActual.toFixed(2);
-                }
-            } catch (e) {}
-        }
-        setInterval(obtenerPrecio, 5000);
-        setInterval(() => { if (operacionesAbiertas.length > 0) actualizarPanel(); }, 800);
+<style>
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) { cambiarPantalla('trading'); escucharUsuario(user.uid); escucharOps(user.uid); } 
-            else { cambiarPantalla('login'); }
-        });
+/* =========================
+RESET
+========================= */
 
-        function escucharUsuario(uid) {
-            onSnapshot(doc(db, "usuarios", uid), (snap) => {
-                if (snap.exists()) { usuarioData = snap.data(); renderSaldos(); }
-            });
-        }
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
 
-        function escucharOps(uid) {
-            const q = query(collection(db, "operaciones"), where("uid", "==", uid), where("estado", "==", "abierta"));
-            onSnapshot(q, (snap) => {
-                operacionesAbiertas = [];
-                snap.forEach(d => operacionesAbiertas.push({ id: d.id, ...d.data() }));
-                actualizarPanel();
-            });
-        }
+body{
+background:#07111f;
+color:white;
+overflow-x:hidden;
+}
 
-        // ================= TRADING & CIERRE MASIVO =================
-        window.abrirOrden = async (tipo) => {
-            if(modoActual === 'real' && !usuarioData.perfilCompleto) return alert("⚠️ Perfil Incompleto.");
-            const lotaje = parseFloat(document.getElementById('inputLotaje').value);
-            await addDoc(collection(db, "operaciones"), {
-                uid: auth.currentUser.uid, tipo, lotaje, precioEntrada: precioActual,
-                modo: modoActual, estado: "abierta", timestamp: serverTimestamp()
-            });
-        };
+/* =========================
+TOPBAR
+========================= */
 
-        function calcularPL(op) {
-            let diff = op.tipo === 'COMPRA' ? (precioActual - op.precioEntrada) : (op.precioEntrada - precioActual);
-            return diff * (op.lotaje * 100);
-        }
+.topbar{
 
-        function actualizarPanel() {
-            const lista = document.getElementById('lista-ops');
-            const panelMasivo = document.getElementById('panel-masivo');
-            lista.innerHTML = "";
-            let total = 0;
+width:100%;
+padding:20px 30px;
 
-            operacionesAbiertas.forEach(op => {
-                let pl = calcularPL(op);
-                total += pl;
-                lista.innerHTML += `
-                    <div class="op-card" onclick="cerrarOrden('${op.id}', ${pl})">
-                        <div class="flex-s">
-                            <span class="${op.tipo}">${op.tipo} ${op.lotaje}</span>
-                            <span class="${pl>=0?'ganancia':'perdida'}"><b>${pl.toFixed(2)}</b></span>
-                        </div>
-                    </div>`;
-            });
+display:flex;
+justify-content:space-between;
+align-items:center;
 
-            document.getElementById('totalPL').innerText = total.toFixed(2);
-            panelMasivo.style.display = operacionesAbiertas.length > 1 ? 'block' : 'none';
-        }
+background:#111827;
 
-        window.cierreMasivo = async (soloPositivas) => {
-            const batch = writeBatch(db);
-            const userRef = doc(db, "usuarios", auth.currentUser.uid);
-            let acumulado = 0;
-            let count = 0;
+border-bottom:1px solid rgba(255,255,255,0.05);
 
-            operacionesAbiertas.forEach(op => {
-                const pl = calcularPL(op);
-                if ((soloPositivas && pl > 0) || (!soloPositivas && pl < 0)) {
-                    const opRef = doc(db, "operaciones", op.id);
-                    batch.update(opRef, { estado: "cerrada", precioCierre: precioActual, ganancia: pl, fechaCierre: serverTimestamp() });
-                    acumulado += pl;
-                    count++;
-                }
-            });
+position:sticky;
+top:0;
+z-index:100;
 
-            if(count > 0) {
-                const campo = modoActual === 'real' ? 'saldoReal' : 'saldoDemo';
-                batch.update(userRef, { [campo]: increment(acumulado) });
-                await batch.commit();
-                alert(`Cerradas ${count} posiciones.`);
-            }
-        };
+}
 
-        window.cerrarOrden = async (id, resultado) => {
-            if(!confirm("¿Cerrar posición ahora?")) return;
-            const campo = modoActual === 'real' ? 'saldoReal' : 'saldoDemo';
-            await updateDoc(doc(db, "operaciones", id), { 
-                estado: "cerrada", precioCierre: precioActual, ganancia: resultado, fechaCierre: serverTimestamp() 
-            });
-            await updateDoc(doc(db, "usuarios", auth.currentUser.uid), { [campo]: increment(resultado) });
-        };
+.logo{
 
-        // ================= PERFIL Y FINANZAS =================
-        window.guardarPerfilReal = async () => {
-            await updateDoc(doc(db, "usuarios", auth.currentUser.uid), {
-                dni: perfDNI.value, bac: perfBAC.value, titularBAC: perfTitular.value, perfilCompleto: true
-            });
-            alert("Perfil Verificado ✅"); cerrarModales();
-        };
+font-size:28px;
+font-weight:700;
 
-        window.solicitarRecargaReal = async () => {
-            const usd = parseFloat(recRealUSD.value);
-            const lps = usd * tasaUSDLPS;
-            await addDoc(collection(db, "recargas"), { uid: auth.currentUser.uid, usd, lps, estado: "pendiente", fecha: serverTimestamp() });
-            alert(`Deposite L. ${lps.toLocaleString()} a cuenta THN.`);
-        };
+background:linear-gradient(90deg,#60a5fa,#2563eb);
 
-        function renderSaldos() {
-            const saldo = modoActual === 'real' ? usuarioData.saldoReal : usuarioData.saldoDemo;
-            document.getElementById('userSaldo').innerText = "$" + saldo.toLocaleString(undefined, {minimumFractionDigits: 2});
-            document.getElementById('userName').innerText = usuarioData.nombre;
-            document.getElementById('btnDemo').className = modoActual === 'demo' ? 'acc-btn active' : 'acc-btn';
-            document.getElementById('btnReal').className = modoActual === 'real' ? 'acc-btn active' : 'acc-btn';
-        }
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
 
-        window.loginSocio = async () => {
-            try { await signInWithEmailAndPassword(auth, logEmail.value, logPass.value); } catch(e) { alert("Error"); }
-        };
+}
 
-        window.cambiarPantalla = (id) => {
-            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-            document.getElementById(id + '-page').style.display = 'flex';
-        };
+.top-right{
 
-        window.toggleModal = (id) => {
-            const m = document.getElementById(id);
-            m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
-        };
+display:flex;
+gap:15px;
+align-items:center;
 
-        window.cerrarModales = () => document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-        window.switchAcc = (m) => { modoActual = m; renderSaldos(); };
+}
 
-    </script>
+.support-btn{
 
-    <style>
-        :root { --oro: #D4AF37; --fondo: #010812; --panel: #0a192f; --rojo: #ff4d4d; --verde: #2ecc71; --azul: #3498db; }
-        body { margin: 0; background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
-        .page { display: none; height: 100vh; flex-direction: column; }
-        header { background: var(--panel); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #112240; }
-        .main { display: flex; flex: 1; overflow: hidden; }
-        .sidebar { width: 300px; background: var(--panel); border-left: 1px solid #112240; display: flex; flex-direction: column; padding: 15px; }
-        .acc-switch { display: flex; background: #000; padding: 3px; border-radius: 8px; }
-        .acc-btn { flex:1; border: none; padding: 6px; border-radius: 6px; cursor: pointer; background: transparent; color: #555; font-size: 0.7em; }
-        .acc-btn.active { background: var(--oro); color: black; font-weight: bold; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin: 5px 0; }
-        .btn-gold { background: var(--oro); color: black; }
-        .btn-buy { background: var(--verde); color: white; }
-        .btn-sell { background: var(--rojo); color: white; }
-        .btn-masivo-pos { background: var(--azul); color: white; font-size: 0.7em; margin-bottom: 2px; }
-        .btn-masivo-neg { background: #441111; color: var(--rojo); font-size: 0.7em; border: 1px solid var(--rojo); }
-        input { width: 100%; background: #000; border: 1px solid #222; color: white; padding: 10px; border-radius: 5px; margin: 5px 0; box-sizing: border-box; }
-        .op-card { background: #010812; padding: 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #112240; cursor: pointer; }
-        .COMPRA { color: var(--verde); } .VENTA { color: var(--rojo); }
-        .ganancia { color: var(--azul); font-weight: bold; } .perdida { color: var(--rojo); font-weight: bold; }
-        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); display:none; align-items:center; justify-content:center; z-index:1000; }
-        .modal-content { background: var(--panel); padding: 25px; border-radius: 12px; width: 340px; border: 1px solid var(--oro); }
-        .flex-s { display: flex; justify-content: space-between; align-items: center; }
-    </style>
+padding:12px 18px;
+
+border:none;
+border-radius:12px;
+
+background:#06b6d4;
+color:white;
+
+font-weight:600;
+cursor:pointer;
+
+}
+
+.logout-btn{
+
+padding:12px 18px;
+
+border:none;
+border-radius:12px;
+
+background:#ef4444;
+color:white;
+
+font-weight:600;
+cursor:pointer;
+
+}
+
+/* =========================
+HERO
+========================= */
+
+.hero{
+
+padding:45px 30px;
+
+background:
+linear-gradient(135deg,#1d4ed8,#2563eb);
+
+}
+
+.hero h1{
+
+font-size:42px;
+margin-bottom:12px;
+
+}
+
+.hero p{
+
+max-width:800px;
+line-height:1.7;
+color:#dbeafe;
+
+}
+
+/* =========================
+DASHBOARD
+========================= */
+
+.dashboard{
+
+padding:30px;
+
+}
+
+/* =========================
+CARDS
+========================= */
+
+.cards{
+
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+gap:20px;
+
+margin-bottom:30px;
+
+}
+
+.card{
+
+background:#111827;
+
+padding:25px;
+
+border-radius:24px;
+
+border:1px solid rgba(255,255,255,0.05);
+
+position:relative;
+overflow:hidden;
+
+}
+
+.card::before{
+
+content:"";
+
+position:absolute;
+top:0;
+left:0;
+
+width:100%;
+height:4px;
+
+background:linear-gradient(90deg,#3b82f6,#60a5fa);
+
+}
+
+.card h3{
+
+font-size:14px;
+color:#94a3b8;
+margin-bottom:12px;
+
+}
+
+.card h1{
+
+font-size:34px;
+margin-bottom:8px;
+
+}
+
+.card p{
+
+font-size:13px;
+color:#94a3b8;
+
+}
+
+/* =========================
+INFO BOX
+========================= */
+
+.info-box{
+
+background:#111827;
+
+padding:30px;
+
+border-radius:24px;
+
+margin-bottom:25px;
+
+border:1px solid rgba(255,255,255,0.05);
+
+}
+
+.info-box h2{
+margin-bottom:20px;
+}
+
+/* =========================
+ACTION BUTTONS
+========================= */
+
+.action-buttons{
+
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
+
+margin-top:20px;
+
+}
+
+.action-btn{
+
+padding:18px;
+
+border:none;
+border-radius:18px;
+
+font-weight:600;
+font-size:15px;
+
+cursor:pointer;
+
+transition:0.3s;
+
+}
+
+.action-btn:hover{
+
+transform:translateY(-3px);
+
+}
+
+.btn-invest{
+background:#2563eb;
+color:white;
+}
+
+.btn-withdraw{
+background:#10b981;
+color:white;
+}
+
+.btn-reinvest{
+background:#f59e0b;
+color:white;
+}
+
+.btn-ref{
+background:#7c3aed;
+color:white;
+}
+
+.btn-capital{
+background:#ec4899;
+color:white;
+}
+
+/* =========================
+REF LINK
+========================= */
+
+.ref-box{
+
+margin-top:20px;
+
+background:#1e293b;
+
+padding:15px;
+
+border-radius:14px;
+
+word-break:break-all;
+
+font-size:13px;
+
+}
+
+/* =========================
+MOVEMENTS
+========================= */
+
+.movement{
+
+background:#1e293b;
+
+padding:18px;
+
+border-radius:14px;
+
+margin-bottom:14px;
+
+}
+
+/* =========================
+STATUS
+========================= */
+
+.status-active{
+color:#10b981;
+font-weight:600;
+}
+
+.status-pending{
+color:#f59e0b;
+font-weight:600;
+}
+
+/* =========================
+MOBILE
+========================= */
+
+@media(max-width:768px){
+
+.hero h1{
+font-size:30px;
+}
+
+.dashboard{
+padding:15px;
+}
+
+.topbar{
+padding:15px;
+flex-direction:column;
+gap:15px;
+align-items:flex-start;
+}
+
+}
+
+/* =========================
+ANIMATION
+========================= */
+
+.card,
+.info-box{
+
+animation:fadeUp .5s ease;
+
+}
+
+@keyframes fadeUp{
+
+from{
+opacity:0;
+transform:translateY(20px);
+}
+
+to{
+opacity:1;
+transform:translateY(0px);
+}
+
+}
+
+</style>
 </head>
+
 <body>
 
-    <div id="login-page" class="page">
-        <div style="height:100vh; display:flex; align-items:center; justify-content:center;">
-            <div style="background:var(--panel); padding:40px; border-radius:15px; border:1px solid var(--oro); width:300px; text-align:center;">
-                <h2 style="color:var(--oro);">THN GOLD</h2>
-                <input type="email" id="logEmail" placeholder="Correo">
-                <input type="password" id="logPass" placeholder="Contraseña">
-                <button class="btn btn-gold" onclick="loginSocio()">INGRESAR</button>
-            </div>
-        </div>
-    </div>
+<!-- =========================
+TOPBAR
+========================= -->
 
-    <div id="trading-page" class="page">
-        <header>
-            <div style="display:flex; align-items:center; gap:15px;">
-                <b style="color:var(--oro); font-size:1.2em;">THN</b>
-                <div class="acc-switch" style="width:120px;">
-                    <button id="btnDemo" class="acc-btn active" onclick="switchAcc('demo')">DEMO</button>
-                    <button id="btnReal" class="acc-btn" onclick="switchAcc('real')">REAL</button>
-                </div>
-            </div>
-            <span id="livePrice" style="color:var(--verde); font-family:monospace; font-weight:bold; font-size:1.3em;">0.00</span>
-            <div style="display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="toggleModal('modal-perfil')">
-                <div style="text-align:right">
-                    <small id="userName" style="color:#888; font-size:0.7em;">...</small><br>
-                    <span id="userSaldo" style="font-weight:bold; color:var(--oro);">$0.00</span>
-                </div>
-                <div style="width:35px; height:35px; background:var(--oro); border-radius:50%; display:flex; align-items:center; justify-content:center; color:black;">👤</div>
-            </div>
-        </header>
+<div class="topbar">
 
-        <div class="main">
-            <div style="flex:1; background:#000;">
-                <div id="tradingview_xau" style="height:100%;"></div>
-                <script src="https://s3.tradingview.com/tv.js"></script>
-                <script>
-                    new TradingView.widget({ "autosize": true, "symbol": "OANDA:XAUUSD", "interval": "1", "theme": "dark", "style": "1", "container_id": "tradingview_xau" });
-                </script>
-            </div>
+<div class="logo">
+NEXURA CAPITAL
+</div>
 
-            <div class="sidebar">
-                <small style="color:#555;">LOTES</small>
-                <input type="number" id="inputLotaje" value="0.01" step="0.01">
-                <button class="btn btn-buy" onclick="abrirOrden('COMPRA')">BUY</button>
-                <button class="btn btn-sell" onclick="abrirOrden('VENTA')">SELL</button>
+<div class="top-right">
 
-                <!-- BOTONES DE CIERRE MASIVO -->
-                <div id="panel-masivo" style="margin-top:15px; display:none;">
-                    <button class="btn btn-masivo-pos" onclick="cierreMasivo(true)">CERRAR TODOS LOS RENTABLES (AZUL)</button>
-                    <button class="btn btn-masivo-neg" onclick="cierreMasivo(false)">CERRAR TODOS LOS NEGATIVOS (ROJO)</button>
-                </div>
+<button class="support-btn"
+onclick="openSupport()">
 
-                <h4 style="margin:20px 0 10px 0; font-size:0.8em; color:var(--oro);">POSICIONES</h4>
-                <div id="lista-ops" style="flex:1; overflow-y:auto;"></div>
-                
-                <div style="padding:15px; background:#000; border-radius:8px; text-align:center;">
-                    <small style="color:#555;">BENEFICIO TOTAL</small><br>
-                    <span id="totalPL" style="font-size:1.4em; font-weight:bold;">0.00</span>
-                </div>
-            </div>
-        </div>
-    </div>
+📲 Soporte
 
-    <!-- MODAL PERFIL -->
-    <div id="modal-perfil" class="modal">
-        <div class="modal-content">
-            <div class="flex-s"><h3>PERFIL</h3><span style="cursor:pointer" onclick="cerrarModales()">✕</span></div>
-            <input type="text" id="perfDNI" placeholder="Identidad">
-            <input type="text" id="perfBAC" placeholder="N° Cuenta BAC">
-            <input type="text" id="perfTitular" placeholder="Titular BAC">
-            <button class="btn btn-gold" onclick="guardarPerfilReal()">VERIFICAR</button>
-            <hr style="border:1px solid #222; margin:15px 0;">
-            <h4>RECARGAR REAL</h4>
-            <input type="number" id="recRealUSD" placeholder="Monto USD">
-            <button class="btn btn-buy" onclick="solicitarRecargaReal()">SOLICITAR LPS</button>
-            <button class="btn" style="background:#222; color:white;" onclick="signOut(auth)">Cerrar Sesión</button>
-        </div>
-    </div>
+</button>
+
+<button class="logout-btn"
+onclick="logout()">
+
+Cerrar Sesión
+
+</button>
+
+</div>
+
+</div>
+
+<!-- =========================
+HERO
+========================= -->
+
+<div class="hero">
+
+<h1 id="welcomeText">
+Bienvenido Inversionista
+</h1>
+
+<p>
+Tu oficina virtual privada te permite administrar tu capital, monitorear tus ganancias mensuales, controlar tus comisiones y acceder a oportunidades de crecimiento financiero dentro de Nexura Capital.
+</p>
+
+</div>
+
+<!-- =========================
+DASHBOARD
+========================= -->
+
+<div class="dashboard">
+
+<!-- =========================
+CARDS
+========================= -->
+
+<div class="cards">
+
+<div class="card">
+
+<h3>
+Capital Activo
+</h3>
+
+<h1 id="capitalText">
+L 0
+</h1>
+
+<p>
+Capital confirmado por administración
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>
+Ganancia Mensual Visual
+</h3>
+
+<h1 id="monthlyText">
+L 0
+</h1>
+
+<p>
+Estimación mensual de rendimiento
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>
+Comisiones Acumuladas
+</h3>
+
+<h1 id="commissionsText">
+L 0
+</h1>
+
+<p>
+Disponible para retiro en fecha habilitada
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>
+Referidos Activos
+</h3>
+
+<h1 id="refsText">
+0
+</h1>
+
+<p>
+Personas registradas contigo
+</p>
+
+</div>
+
+</div>
+
+<!-- =========================
+INFO
+========================= -->
+
+<div class="info-box">
+
+<h2>
+Información de Cuenta
+</h2>
+
+<div id="accountInfo">
+
+Cargando información...
+
+</div>
+
+<div class="ref-box" id="refLink">
+
+Cargando link...
+
+</div>
+
+<div class="action-buttons">
+
+<button class="action-btn btn-invest"
+onclick="requestInvestment()">
+
+💰 Solicitar Inversión
+
+</button>
+
+<button class="action-btn btn-withdraw"
+onclick="requestWithdraw()">
+
+💸 Retirar Comisiones
+
+</button>
+
+<button class="action-btn btn-reinvest"
+onclick="reinvestCommissions()">
+
+♻ Reinvertir Comisiones
+
+</button>
+
+<button class="action-btn btn-ref"
+onclick="copyRefLink()">
+
+🤝 Copiar Link Referido
+
+</button>
+
+<button class="action-btn btn-capital"
+id="capitalWithdrawBtn"
+onclick="withdrawCapital()">
+
+🏦 Retirar Capital
+
+</button>
+
+</div>
+
+</div>
+
+<!-- =========================
+MOVIMIENTOS
+========================= -->
+
+<div class="info-box">
+
+<h2>
+Movimientos Recientes
+</h2>
+
+<div id="movements">
+
+<p style="color:#94a3b8;">
+No hay movimientos todavía
+</p>
+
+</div>
+
+</div>
+
+<script type="module">
+  /* =========================
+FIREBASE
+========================= */
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+import {
+
+getAuth,
+onAuthStateChanged,
+signOut
+
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+import {
+
+getFirestore,
+doc,
+getDoc,
+updateDoc,
+addDoc,
+collection,
+query,
+where,
+getDocs,
+serverTimestamp
+
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/* =========================
+CONFIG
+========================= */
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyBDSF0i002CE37zDx9oyc1tnWscLCmOdPE",
+
+authDomain: "panel-multinivel.firebaseapp.com",
+
+projectId: "panel-multinivel",
+
+storageBucket: "panel-multinivel.appspot.com",
+
+messagingSenderId: "57838273686",
+
+appId: "1:57838273686:web:a6ec68314165c0ec23aeb7"
+
+};
+
+/* =========================
+INIT
+========================= */
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+
+const db = getFirestore(app);
+
+let currentUser = null;
+
+/* =========================
+VERIFY LOGIN
+========================= */
+
+onAuthStateChanged(auth, async(user)=>{
+
+if(!user){
+
+window.location.href = "registro.html";
+return;
+
+}
+
+const snap = await getDoc(
+doc(db,"users",user.uid)
+);
+
+if(!snap.exists()){
+
+alert("Usuario no encontrado");
+return;
+
+}
+
+currentUser = snap.data();
+
+loadDashboard();
+
+});
+
+/* =========================
+LOAD DASHBOARD
+========================= */
+
+async function loadDashboard(){
+
+welcomeText.innerText =
+"Bienvenido " + currentUser.name;
+
+/* =========================
+GANANCIA VISUAL
+========================= */
+
+let monthly = 0;
+
+if(currentUser.capital > 0){
+
+monthly = currentUser.capital * 0.10;
+
+/* SI ENTRÓ A MITAD DE MES */
+
+if(currentUser.investmentApprovedAt){
+
+let invDate = new Date(
+currentUser.investmentApprovedAt
+);
+
+let day = invDate.getDate();
+
+if(day > 1){
+
+let remainingDays = 30 - day;
+
+monthly =
+(monthly / 30) * remainingDays;
+
+}
+
+}
+
+}
+
+/* =========================
+UI
+========================= */
+
+capitalText.innerText =
+"L " + Number(currentUser.capital || 0).toFixed(2);
+
+monthlyText.innerText =
+"L " + Number(monthly).toFixed(2);
+
+commissionsText.innerText =
+"L " + Number(currentUser.commissions || 0).toFixed(2);
+
+refsText.innerText =
+currentUser.refs || 0;
+
+/* =========================
+ACCOUNT INFO
+========================= */
+
+accountInfo.innerHTML = `
+
+<b>Nombre:</b> ${currentUser.name}<br><br>
+
+<b>Correo:</b> ${currentUser.email}<br><br>
+
+<b>WhatsApp:</b> ${currentUser.phone}<br><br>
+
+<b>Código Referido:</b> ${currentUser.code}<br><br>
+
+<b>Estado:</b>
+
+${
+currentUser.capital > 0
+?
+'<span class="status-active">Inversionista Activo</span>'
+:
+'<span class="status-pending">Pendiente de inversión</span>'
+}
+
+`;
+
+/* =========================
+LINK REFERIDO
+========================= */
+
+let refUrl =
+window.location.origin +
+"/registro.html?ref=" +
+currentUser.code;
+
+refLink.innerText = refUrl;
+
+/* =========================
+RETIRAR CAPITAL 6 MESES
+========================= */
+
+if(currentUser.investmentApprovedAt){
+
+let approvedDate =
+new Date(currentUser.investmentApprovedAt);
+
+let now = new Date();
+
+let diffMonths =
+(now.getFullYear() - approvedDate.getFullYear()) * 12 +
+(now.getMonth() - approvedDate.getMonth());
+
+if(diffMonths >= 6){
+
+capitalWithdrawBtn.style.display="block";
+
+}else{
+
+capitalWithdrawBtn.style.display="none";
+
+}
+
+}else{
+
+capitalWithdrawBtn.style.display="none";
+
+}
+
+loadMovements();
+
+}
+
+/* =========================
+SOLICITAR INVERSIÓN
+========================= */
+
+window.requestInvestment = async function(){
+
+let amount = prompt(
+"¿Cuánto deseas invertir en Lempiras?"
+);
+
+if(!amount) return;
+
+amount = parseFloat(amount);
+
+if(amount <= 0){
+
+alert("Monto inválido");
+return;
+
+}
+
+/* REQUEST */
+
+await addDoc(
+collection(db,"investmentRequests"),
+{
+
+uid:currentUser.uid,
+
+name:currentUser.name,
+
+phone:currentUser.phone,
+
+amount:amount,
+
+status:"Pendiente",
+
+createdAt:serverTimestamp()
+
+});
+
+/* MOVIMIENTO */
+
+await addDoc(collection(db,"movements"),{
+
+uid:currentUser.uid,
+
+type:"Solicitud de inversión",
+
+amount:amount,
+
+createdAt:serverTimestamp()
+
+});
+
+/* WHATSAPP */
+
+let adminPhone = "50499999999";
+
+let text =
+
+`Hola Nexura Capital.%0A%0A`+
+
+`Nueva solicitud de inversión:%0A%0A`+
+
+`Nombre: ${currentUser.name}%0A`+
+
+`WhatsApp: ${currentUser.phone}%0A`+
+
+`Monto: L ${amount}`;
+
+window.open(
+`https://wa.me/${adminPhone}?text=${text}`
+);
+
+alert(
+"Solicitud enviada correctamente"
+);
+
+loadMovements();
+
+}
+
+/* =========================
+RETIRAR COMISIONES
+========================= */
+
+window.requestWithdraw = async function(){
+
+let today = new Date();
+
+let day = today.getDate();
+
+/* SOLO 7 DÍAS */
+
+if(day > 7){
+
+alert(
+"Los retiros solo están disponibles los primeros 7 días de cada mes."
+);
+
+return;
+
+}
+
+if(currentUser.commissions <= 0){
+
+alert("No tienes comisiones acumuladas");
+return;
+
+}
+
+let confirmWithdraw =
+confirm(
+"¿Deseas solicitar el retiro?"
+);
+
+if(!confirmWithdraw) return;
+
+await addDoc(collection(db,"withdrawals"),{
+
+uid:currentUser.uid,
+
+name:currentUser.name,
+
+amount:currentUser.commissions,
+
+type:"Comisiones",
+
+status:"Pendiente",
+
+createdAt:serverTimestamp()
+
+});
+
+/* MOVIMIENTO */
+
+await addDoc(collection(db,"movements"),{
+
+uid:currentUser.uid,
+
+type:"Solicitud retiro comisión",
+
+amount:currentUser.commissions,
+
+createdAt:serverTimestamp()
+
+});
+
+alert(
+"Solicitud enviada correctamente"
+);
+
+}
+
+/* =========================
+REINVERTIR
+========================= */
+
+window.reinvestCommissions = async function(){
+
+if(currentUser.commissions <= 0){
+
+alert("No tienes comisiones");
+return;
+
+}
+
+let conf = confirm(
+"¿Seguro que deseas reinvertir tus comisiones?"
+);
+
+if(!conf) return;
+
+let newCapital =
+Number(currentUser.capital || 0) +
+Number(currentUser.commissions || 0);
+
+await updateDoc(
+doc(db,"users",currentUser.uid),
+{
+
+capital:newCapital,
+
+commissions:0
+
+});
+
+await addDoc(collection(db,"movements"),{
+
+uid:currentUser.uid,
+
+type:"Reinversión de comisión",
+
+amount:currentUser.commissions,
+
+createdAt:serverTimestamp()
+
+});
+
+currentUser.capital = newCapital;
+
+currentUser.commissions = 0;
+
+alert(
+"Comisiones reinvertidas correctamente"
+);
+
+loadDashboard();
+
+}
+
+/* =========================
+RETIRAR CAPITAL
+========================= */
+
+window.withdrawCapital = async function(){
+
+if(currentUser.capital <= 0){
+
+alert("No tienes capital");
+return;
+
+}
+
+let conf = confirm(
+"¿Deseas solicitar retiro de capital?"
+);
+
+if(!conf) return;
+
+await addDoc(collection(db,"withdrawals"),{
+
+uid:currentUser.uid,
+
+name:currentUser.name,
+
+amount:currentUser.capital,
+
+type:"Capital",
+
+status:"Pendiente",
+
+createdAt:serverTimestamp()
+
+});
+
+/* MOVIMIENTO */
+
+await addDoc(collection(db,"movements"),{
+
+uid:currentUser.uid,
+
+type:"Solicitud retiro capital",
+
+amount:currentUser.capital,
+
+createdAt:serverTimestamp()
+
+});
+
+alert(
+"Solicitud enviada correctamente"
+);
+
+}
+
+/* =========================
+COPY LINK
+========================= */
+
+window.copyRefLink = function(){
+
+navigator.clipboard.writeText(
+refLink.innerText
+);
+
+alert("Link copiado");
+
+}
+
+/* =========================
+WHATSAPP SOPORTE
+========================= */
+
+window.openSupport = function(){
+
+let phone = "50499999999";
+
+let text =
+"Hola Nexura Capital, necesito ayuda.";
+
+window.open(
+`https://wa.me/${phone}?text=${encodeURIComponent(text)}`
+);
+
+}
+
+/* =========================
+MOVEMENTS
+========================= */
+
+async function loadMovements(){
+
+const q = query(
+collection(db,"movements"),
+where("uid","==",currentUser.uid)
+);
+
+const snap = await getDocs(q);
+
+let html = "";
+
+snap.forEach((d)=>{
+
+let data = d.data();
+
+html += `
+
+<div class="movement">
+
+<h4>${data.type}</h4>
+
+<p style="margin-top:8px;">
+Monto: L ${data.amount}
+</p>
+
+</div>
+
+`;
+
+});
+
+if(html === ""){
+
+html = `
+<p style="color:#94a3b8;">
+No hay movimientos todavía
+</p>
+`;
+
+}
+
+movements.innerHTML = html;
+
+}
+
+/* =========================
+LOGOUT
+========================= */
+
+window.logout = async function(){
+
+await signOut(auth);
+
+window.location.href = "registro.html";
+
+}
+
+console.log(
+"NEXURA CAPITAL OFICINA READY 🚀"
+);
+
+</script>
 
 </body>
 </html>
