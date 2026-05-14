@@ -1,84 +1,573 @@
-<!-- ====================================================== -->
-<!-- NEXURA CAPITAL ELITE X -->
-<!-- VERSION FINTECH PROFESIONAL -->
-<!-- PARTE 1/3 -->
-<!-- ====================================================== -->
-
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Nexura Capital</title>
 
-<title>Nexura Capital Elite X</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<!-- ====================================================== -->
-<!-- TAILWIND -->
-<!-- ====================================================== -->
+<style>
 
-<script src="https://cdn.tailwindcss.com"></script>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
 
-<!-- ====================================================== -->
-<!-- FONT -->
-<!-- ====================================================== -->
+body{
+    background:#020817;
+    color:white;
+    overflow-x:hidden;
+}
 
-<link
-href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-rel="stylesheet"
-/>
+/* FONDO */
 
-<!-- ====================================================== -->
-<!-- CHART -->
-<!-- ====================================================== -->
+.bg{
+    position:fixed;
+    inset:0;
+    background:
+    radial-gradient(circle at top right, rgba(255,215,0,.15), transparent 25%),
+    radial-gradient(circle at bottom left, rgba(255,215,0,.10), transparent 25%),
+    linear-gradient(135deg,#020817,#07152d,#020817);
+    z-index:-3;
+}
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+.blur1{
+    position:fixed;
+    width:300px;
+    height:300px;
+    background:gold;
+    opacity:.08;
+    filter:blur(120px);
+    border-radius:50%;
+    top:-100px;
+    right:-100px;
+    z-index:-2;
+}
 
-<!-- ====================================================== -->
-<!-- ICONS -->
-<!-- ====================================================== -->
+.blur2{
+    position:fixed;
+    width:350px;
+    height:350px;
+    background:#0ea5e9;
+    opacity:.08;
+    filter:blur(120px);
+    border-radius:50%;
+    bottom:-100px;
+    left:-100px;
+    z-index:-2;
+}
 
-<link
-rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-/>
+/* LOGIN */
 
-<!-- ====================================================== -->
-<!-- FIREBASE -->
-<!-- ====================================================== -->
+.auth-container{
+    width:100%;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.auth-box{
+    width:100%;
+    max-width:450px;
+    background:rgba(15,23,42,.8);
+    border:1px solid rgba(255,255,255,.05);
+    border-radius:30px;
+    padding:35px;
+    backdrop-filter:blur(15px);
+    box-shadow:0 20px 50px rgba(0,0,0,.5);
+}
+
+.logo{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.logo img{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    border:3px solid gold;
+    object-fit:cover;
+    box-shadow:0 0 30px rgba(255,215,0,.4);
+}
+
+.logo h1{
+    color:gold;
+    margin-top:15px;
+    font-size:32px;
+    font-weight:800;
+}
+
+.logo p{
+    color:#94a3b8;
+}
+
+.tabs{
+    display:flex;
+    gap:10px;
+    margin-bottom:25px;
+}
+
+.tab{
+    flex:1;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:#0f172a;
+    color:white;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.tab.active{
+    background:gold;
+    color:#07152d;
+}
+
+.hidden{
+    display:none;
+}
+
+.input-group{
+    margin-bottom:18px;
+}
+
+.input-group label{
+    display:block;
+    margin-bottom:8px;
+    color:#cbd5e1;
+}
+
+.input-group input{
+    width:100%;
+    padding:16px;
+    border:none;
+    border-radius:14px;
+    background:#0f172a;
+    color:white;
+    outline:none;
+    font-size:14px;
+}
+
+.btn{
+    width:100%;
+    padding:16px;
+    border:none;
+    border-radius:14px;
+    background:gold;
+    color:#07152d;
+    font-weight:800;
+    cursor:pointer;
+    transition:.3s;
+    margin-top:10px;
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+/* DASHBOARD */
+
+.dashboard{
+    display:none;
+}
+
+header{
+    width:100%;
+    padding:20px 30px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:rgba(2,8,23,.9);
+    border-bottom:1px solid rgba(255,255,255,.05);
+    backdrop-filter:blur(15px);
+    position:sticky;
+    top:0;
+    z-index:999;
+}
+
+.header-logo{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.header-logo img{
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    border:2px solid gold;
+}
+
+.header-logo h2{
+    color:gold;
+}
+
+.container{
+    width:95%;
+    max-width:1450px;
+    margin:auto;
+    padding:30px 0;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:rgba(15,23,42,.8);
+    border-radius:25px;
+    padding:25px;
+    border:1px solid rgba(255,255,255,.05);
+}
+
+.card h4{
+    color:#94a3b8;
+    margin-bottom:10px;
+}
+
+.card h1{
+    color:gold;
+    font-size:34px;
+}
+
+.section{
+    margin-top:25px;
+    background:rgba(15,23,42,.8);
+    border-radius:25px;
+    padding:25px;
+    border:1px solid rgba(255,255,255,.05);
+}
+
+.section h2{
+    color:gold;
+    margin-bottom:20px;
+}
+
+.ref-box{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.ref-box input{
+    flex:1;
+    padding:16px;
+    border:none;
+    border-radius:14px;
+    background:#0f172a;
+    color:white;
+}
+
+.copy-btn{
+    padding:16px 20px;
+    border:none;
+    border-radius:14px;
+    background:gold;
+    color:#07152d;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.table-box{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    min-width:700px;
+    border-collapse:collapse;
+}
+
+th{
+    background:#0f172a;
+    color:gold;
+    padding:15px;
+    text-align:left;
+}
+
+td{
+    padding:15px;
+    border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.badge{
+    padding:7px 14px;
+    border-radius:40px;
+    background:rgba(34,197,94,.15);
+    color:#22c55e;
+    font-size:12px;
+}
+
+.pending{
+    background:rgba(234,179,8,.15);
+    color:#facc15;
+}
+
+.logout{
+    background:red;
+    color:white;
+    margin-top:25px;
+}
+
+/* WHATSAPP */
+
+.whatsapp{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    width:65px;
+    height:65px;
+    border-radius:50%;
+    background:#25d366;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-decoration:none;
+    box-shadow:0 0 25px rgba(37,211,102,.5);
+    z-index:999;
+}
+
+.whatsapp img{
+    width:34px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="bg"></div>
+<div class="blur1"></div>
+<div class="blur2"></div>
+
+<!-- LOGIN / REGISTRO -->
+
+<div class="auth-container" id="authContainer">
+
+    <div class="auth-box">
+
+        <div class="logo">
+            <img src="img/Nexura_Capital_logo.png">
+            <h1>NEXURA</h1>
+            <p>Capital Investment Platform</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" id="loginTab">Iniciar Sesión</button>
+            <button class="tab" id="registerTab">Registro</button>
+        </div>
+
+        <!-- LOGIN -->
+
+        <div id="loginForm">
+
+            <div class="input-group">
+                <label>Correo Electrónico</label>
+                <input type="email" id="loginEmail">
+            </div>
+
+            <div class="input-group">
+                <label>Contraseña</label>
+                <input type="password" id="loginPassword">
+            </div>
+
+            <button class="btn" id="loginBtn">
+                Entrar a Oficina Virtual
+            </button>
+
+        </div>
+
+        <!-- REGISTRO -->
+
+        <div id="registerForm" class="hidden">
+
+            <div class="input-group">
+                <label>Nombre Completo</label>
+                <input type="text" id="registerName">
+            </div>
+
+            <div class="input-group">
+                <label>Correo Electrónico</label>
+                <input type="email" id="registerEmail">
+            </div>
+
+            <div class="input-group">
+                <label>Contraseña</label>
+                <input type="password" id="registerPassword">
+            </div>
+
+            <div class="input-group">
+                <label>ID Referido</label>
+                <input type="text" id="referrerId" readonly>
+            </div>
+
+            <button class="btn" id="registerBtn">
+                Crear Cuenta
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- DASHBOARD -->
+
+<div class="dashboard" id="dashboard">
+
+<header>
+
+    <div class="header-logo">
+        <img src="img/Nexura_Capital_logo.png">
+
+        <div>
+            <h2>NEXURA CAPITAL</h2>
+            <small>Oficina Virtual</small>
+        </div>
+    </div>
+
+    <div>
+        <small>Bienvenido</small>
+        <h3 id="userName">Usuario</h3>
+    </div>
+
+</header>
+
+<div class="container">
+
+    <div class="cards">
+
+        <div class="card">
+            <h4>Capital Invertido</h4>
+            <h1 id="capital">$0.00</h1>
+        </div>
+
+        <div class="card">
+            <h4>Ganancia Mensual 10%</h4>
+            <h1 id="monthly">$0.00</h1>
+        </div>
+
+        <div class="card">
+            <h4>Comisiones Referidos</h4>
+            <h1 id="bonus">$0.00</h1>
+        </div>
+
+        <div class="card">
+            <h4>Estado</h4>
+            <h1 id="accountStatus">Pendiente</h1>
+        </div>
+
+    </div>
+
+    <div class="section">
+
+        <h2>Link de Referido</h2>
+
+        <div class="ref-box">
+            <input type="text" id="refLink" readonly>
+
+            <button class="copy-btn" onclick="copyRef()">
+                Copiar
+            </button>
+        </div>
+
+    </div>
+
+    <div class="section">
+
+        <h2>Historial de Movimientos</h2>
+
+        <div class="table-box">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Movimiento</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+
+                <tbody id="historyTable"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <div class="section">
+
+        <h2>Historial de Referidos</h2>
+
+        <div class="table-box">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Invitado</th>
+                        <th>Inversión</th>
+                        <th>Comisión</th>
+                    </tr>
+                </thead>
+
+                <tbody id="refTable"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <button class="btn logout" id="logoutBtn">
+        Cerrar Sesión
+    </button>
+
+</div>
+
+</div>
+
+<!-- WHATSAPP -->
+
+<a class="whatsapp" href="https://wa.me/50492037877" target="_blank">
+    <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png">
+</a>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
-getAuth,
-signInWithEmailAndPassword,
-onAuthStateChanged,
-signOut
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-getFirestore,
-collection,
-addDoc,
-getDocs,
-query,
-where,
-serverTimestamp,
-doc,
-getDoc,
-updateDoc,
-onSnapshot,
-orderBy
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    getDatabase,
+    ref,
+    set,
+    get,
+    push,
+    onValue
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* ====================================================== */
-/* FIREBASE CONFIG */
-/* ====================================================== */
+/* FIREBASE */
 
 const firebaseConfig = {
 
@@ -109,1329 +598,372 @@ const firebaseConfig = {
 
 };
 
-/* ====================================================== */
-/* INIT */
-/* ====================================================== */
-
 const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 
-const db = getFirestore(app);
+const db = getDatabase(app);
 
-/* ====================================================== */
+/* TABS */
+
+const loginTab = document.getElementById("loginTab");
+const registerTab = document.getElementById("registerTab");
+
+const loginForm = document.getElementById("loginForm");
+const registerForm = document.getElementById("registerForm");
+
+loginTab.onclick = ()=>{
+
+    loginTab.classList.add("active");
+    registerTab.classList.remove("active");
+
+    loginForm.classList.remove("hidden");
+    registerForm.classList.add("hidden");
+
+}
+
+registerTab.onclick = ()=>{
+
+    registerTab.classList.add("active");
+    loginTab.classList.remove("active");
+
+    registerForm.classList.remove("hidden");
+    loginForm.classList.add("hidden");
+
+}
+
+/* REFERIDO */
+
+const params = new URLSearchParams(window.location.search);
+
+const referralCode = params.get("ref");
+
+if(referralCode){
+
+    document.getElementById("referrerId").value = referralCode;
+
+}
+
+/* REGISTRO */
+
+document.getElementById("registerBtn").onclick = async()=>{
+
+    const name = document.getElementById("registerName").value;
+
+    const email = document.getElementById("registerEmail").value;
+
+    const password = document.getElementById("registerPassword").value;
+
+    const referrer = document.getElementById("referrerId").value;
+
+    if(!name || !email || !password){
+
+        alert("Completa todos los campos");
+
+        return;
+    }
+
+    try{
+
+        const userCredential =
+        await createUserWithEmailAndPassword(auth,email,password);
+
+        const uid = userCredential.user.uid;
+
+        await set(ref(db,"users/" + uid),{
+
+            uid:uid,
+            name:name,
+            email:email,
+
+            invested:0,
+            refBonus:0,
+
+            active:false,
+
+            status:"Pendiente",
+
+            referrer:referrer || "",
+
+            createdAt:new Date().toLocaleString("es-HN")
+
+        });
+
+        /* REFERIDOS */
+
+        if(referrer){
+
+            await push(ref(db,"referrals/" + referrer),{
+
+                uid:uid,
+                name:name,
+                invested:0,
+                commission:0,
+                status:"Pendiente",
+                date:new Date().toLocaleString("es-HN")
+
+            });
+
+        }
+
+        alert("Cuenta creada correctamente");
+
+    }catch(error){
+
+        console.error(error);
+
+        alert(error.message);
+
+    }
+
+}
+
 /* LOGIN */
-/* ====================================================== */
 
-document.addEventListener("DOMContentLoaded",()=>{
+document.getElementById("loginBtn").onclick = async()=>{
 
-const loginBtn =
-document.getElementById("loginBtn");
+    const email =
+    document.getElementById("loginEmail").value;
 
-loginBtn.onclick = async()=>{
+    const password =
+    document.getElementById("loginPassword").value;
 
-const email =
-document.getElementById("email").value;
+    if(!email || !password){
 
-const password =
-document.getElementById("password").value;
+        alert("Completa todos los campos");
 
-if(!email || !password){
+        return;
+    }
 
-alert("Completa todos los campos");
-return;
+    try{
 
-}
+        await signInWithEmailAndPassword(auth,email,password);
 
-try{
+    }catch(error){
 
-loginBtn.innerHTML =
-`<i class="fa-solid fa-spinner fa-spin"></i> Accediendo`;
+        console.error(error);
 
-await signInWithEmailAndPassword(
-auth,
-email,
-password
-);
+        alert(error.message);
 
-}catch(error){
-
-alert(error.message);
-
-loginBtn.innerHTML =
-`Ingresar`;
+    }
 
 }
 
-};
-
-});
-
-/* ====================================================== */
-/* AUTH STATE */
-/* ====================================================== */
+/* SESSION */
 
 onAuthStateChanged(auth, async(user)=>{
 
-if(user){
+    if(user){
 
-document.getElementById("loginModal")
-.style.display = "none";
+        try{
 
-document.getElementById("dashboard")
-.classList.remove("hidden");
+            const uid = user.uid;
 
-/* ====================================================== */
-/* USER DATA */
-/* ====================================================== */
+            const snapshot =
+            await get(ref(db,"users/" + uid));
 
-const userRef = doc(db,"users",user.uid);
+            if(!snapshot.exists()){
 
-const userSnap = await getDoc(userRef);
+                alert("Usuario no encontrado");
 
-let userData = {};
+                return;
+            }
 
-if(userSnap.exists()){
+            const data = snapshot.val();
 
-userData = userSnap.data();
+            document.getElementById("authContainer").style.display =
+            "none";
 
-}
+            document.getElementById("dashboard").style.display =
+            "block";
 
-/* ====================================================== */
-/* USER INFO */
-/* ====================================================== */
+            document.getElementById("userName").innerHTML =
+            data.name || "Usuario";
 
-document.getElementById("userName").innerText =
-userData.nombre || "Socio Nexura";
+            const invested =
+            Number(data.invested) || 0;
 
-document.getElementById("userEmail").innerText =
-user.email;
+            const refBonus =
+            Number(data.refBonus) || 0;
 
-document.getElementById("userInitial").innerText =
-(userData.nombre || "N")
-.charAt(0)
-.toUpperCase();
+            document.getElementById("capital").innerHTML =
+            "$" + invested.toFixed(2);
 
-/* ====================================================== */
-/* REF LINK */
-/* ====================================================== */
+            /* SI ESTA ACTIVO */
 
-document.getElementById("refLink").value =
-`${window.location.origin}/registro.html?ref=${user.uid}`;
+            if(data.active === true){
 
-/* ====================================================== */
-/* REALTIME USER */
-/* ====================================================== */
+                document.getElementById("monthly").innerHTML =
+                "$" + (invested * 0.10).toFixed(2);
 
-onSnapshot(userRef,(snap)=>{
+                document.getElementById("accountStatus").innerHTML =
+                "Activo";
 
-if(!snap.exists()) return;
+            }else{
 
-const data = snap.data();
+                document.getElementById("monthly").innerHTML =
+                "Pendiente";
 
-const capital = data.capital || 0;
+                document.getElementById("accountStatus").innerHTML =
+                "Pendiente";
 
-const ganancias = data.ganancias || 0;
+            }
 
-const referidos = data.referidosGanancia || 0;
+            document.getElementById("bonus").innerHTML =
+            "$" + refBonus.toFixed(2);
 
-const balance =
-capital + ganancias + referidos;
+            document.getElementById("refLink").value =
+            window.location.origin +
+            window.location.pathname +
+            "?ref=" + uid;
 
-document.getElementById("capital")
-.innerText =
-capital.toLocaleString("es-HN");
+            loadHistory(uid);
 
-document.getElementById("ganancia")
-.innerText =
-ganancias.toLocaleString("es-HN");
+            loadRefs(uid);
 
-document.getElementById("referido")
-.innerText =
-referidos.toLocaleString("es-HN");
+        }catch(error){
 
-document.getElementById("balanceTotal")
-.innerText =
-balance.toLocaleString("es-HN");
+            console.error(error);
 
-document.getElementById("gananciaReferidos")
-.innerText =
-"L." + referidos.toLocaleString("es-HN");
+            alert(error.message);
 
-document.getElementById("estado")
-.innerText =
-(data.estado || "Pendiente")
-.toUpperCase();
+        }
 
-document.getElementById("estadoBox")
-.innerText =
-(data.estado || "Pendiente")
-.toUpperCase();
-
-document.getElementById("totalReferidos")
-.innerText =
-data.totalReferidos || 0;
-
-/* STATUS COLOR */
-
-const estado =
-(data.estado || "").toLowerCase();
-
-const estadoBox =
-document.getElementById("estadoBox");
-
-if(estado === "activo"){
-
-estadoBox.className =
-"bg-green-500/10 text-green-400 px-5 py-3 rounded-2xl text-sm font-bold";
-
-}else{
-
-estadoBox.className =
-"bg-yellow-500/10 text-yellow-400 px-5 py-3 rounded-2xl text-sm font-bold";
-
-}
+    }
 
 });
 
-/* ====================================================== */
-/* GRAFICO */
-/* ====================================================== */
+/* HISTORIAL */
 
-const ctx =
-document.getElementById("grafico");
+function loadHistory(uid){
 
-new Chart(ctx,{
+    const historyRef =
+    ref(db,"movements/" + uid);
 
-type:"line",
+    onValue(historyRef,(snapshot)=>{
 
-data:{
+        const table =
+        document.getElementById("historyTable");
 
-labels:[
-"Ene",
-"Feb",
-"Mar",
-"Abr",
-"May",
-"Jun"
-],
+        table.innerHTML = "";
 
-datasets:[{
+        if(snapshot.exists()){
 
-label:"Rendimiento",
+            snapshot.forEach((child)=>{
 
-data:[
-1200,
-1900,
-3000,
-4200,
-6000,
-8500
-],
+                const data = child.val();
 
-borderColor:"#f0b90b",
+                table.innerHTML += `
 
-backgroundColor:"rgba(240,185,11,.1)",
+                <tr>
+                    <td>${data.date}</td>
+                    <td>${data.type}</td>
+                    <td>$${data.amount}</td>
+                    <td>
+                        <span class="badge">
+                        ${data.status}
+                        </span>
+                    </td>
+                </tr>
 
-fill:true,
+                `;
 
-tension:.4
+            });
 
-}]
+        }else{
 
-},
+            table.innerHTML = `
 
-options:{
+            <tr>
+                <td colspan="4">
+                No hay movimientos todavía
+                </td>
+            </tr>
 
-responsive:true,
+            `;
 
-plugins:{
+        }
 
-legend:{
-display:false
-}
-
-},
-
-scales:{
-
-x:{
-ticks:{
-color:"#64748b"
-},
-grid:{
-color:"#1e2329"
-}
-},
-
-y:{
-ticks:{
-color:"#64748b"
-},
-grid:{
-color:"#1e2329"
-}
-}
+    });
 
 }
 
+/* REFERIDOS */
+
+function loadRefs(uid){
+
+    const refsRef =
+    ref(db,"referrals/" + uid);
+
+    onValue(refsRef,(snapshot)=>{
+
+        const table =
+        document.getElementById("refTable");
+
+        table.innerHTML = "";
+
+        if(snapshot.exists()){
+
+            snapshot.forEach((child)=>{
+
+                const data = child.val();
+
+                table.innerHTML += `
+
+                <tr>
+                    <td>${data.date}</td>
+                    <td>${data.name}</td>
+                    <td>$${data.invested}</td>
+                    <td>$${data.commission}</td>
+                </tr>
+
+                `;
+
+            });
+
+        }else{
+
+            table.innerHTML = `
+
+            <tr>
+                <td colspan="4">
+                No hay referidos todavía
+                </td>
+            </tr>
+
+            `;
+
+        }
+
+    });
+
 }
 
-});
-<!-- ====================================================== -->
-<!-- LOGIN -->
-<!-- ====================================================== -->
+/* COPIAR */
 
-<div id="loginModal">
+window.copyRef = async()=>{
 
-<div class="loginCard">
+    const input =
+    document.getElementById("refLink");
 
-<div class="text-center mb-10">
+    await navigator.clipboard.writeText(input.value);
 
-<h1 class="text-5xl font-black mb-4">
+    alert("Link copiado");
 
-<span class="text-yellow-400">
-NEXURA
-</span>
+}
 
-CAPITAL
-
-</h1>
-
-<p class="text-slate-400 leading-relaxed">
-Accede a tu oficina financiera institucional.
-</p>
-
-</div>
-
-<div class="space-y-5">
-
-<div>
-
-<label class="text-xs uppercase tracking-[3px] text-slate-500 mb-3 block">
-Correo Electrónico
-</label>
-
-<input
-type="email"
-id="email"
-placeholder="ejemplo@email.com"
-class="input"
-/>
-
-</div>
-
-<div>
-
-<label class="text-xs uppercase tracking-[3px] text-slate-500 mb-3 block">
-Contraseña
-</label>
-
-<input
-type="password"
-id="password"
-placeholder="••••••••••"
-class="input"
-/>
-
-</div>
-
-<button
-id="loginBtn"
-class="yellow-btn w-full h-14 rounded-2xl uppercase tracking-[4px]"
->
-Ingresar
-</button>
-
-<a href="registro.html">
-
-<button
-class="w-full h-14 rounded-2xl border border-yellow-500/20 uppercase tracking-[4px] text-sm hover:bg-yellow-500/10 transition"
->
-Crear Cuenta
-</button>
-
-</a>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- ====================================================== -->
-<!-- SIDEBAR -->
-<!-- ====================================================== -->
-
-<div class="sidebar">
-
-<!-- LOGO -->
-
-<div class="logoBox">
-
-<h1 class="text-4xl font-black text-yellow-400">
-NEXURA
-</h1>
-
-<p class="text-[10px] uppercase tracking-[4px] text-slate-500 mt-2">
-ELITE INVESTMENT PANEL
-</p>
-
-</div>
-
-<!-- USER CARD -->
-
-<div class="userCard">
-
-<div class="flex items-center gap-4">
-
-<div
-id="userInitial"
-class="avatar"
->
-N
-</div>
-
-<div>
-
-<h3
-id="userName"
-class="font-bold text-lg"
->
-Socio Nexura
-</h3>
-
-<p
-id="userEmail"
-class="text-slate-500 text-sm"
->
-usuario@email.com
-</p>
-
-</div>
-
-</div>
-
-<div class="grid grid-cols-2 gap-3 mt-5">
-
-<div class="bg-[#0b1017] rounded-2xl p-4 border border-[#1f2937]">
-
-<p class="text-[10px] uppercase tracking-[2px] text-slate-500 mb-2">
-Nivel
-</p>
-
-<h3 class="font-black text-yellow-400">
-VIP
-</h3>
-
-</div>
-
-<div class="bg-[#0b1017] rounded-2xl p-4 border border-[#1f2937]">
-
-<p class="text-[10px] uppercase tracking-[2px] text-slate-500 mb-2">
-Estado
-</p>
-
-<h3
-id="estadoSidebar"
-class="font-black text-green-400"
->
-Activo
-</h3>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- MENU -->
-
-<a href="#inicio" class="sidebar-link active">
-<i class="fa-solid fa-house"></i>
-Inicio
-</a>
-
-<a href="#balance" class="sidebar-link">
-<i class="fa-solid fa-wallet"></i>
-Balance
-</a>
-
-<a href="#inversiones" class="sidebar-link">
-<i class="fa-solid fa-chart-line"></i>
-Inversiones
-</a>
-
-<a href="#referidos" class="sidebar-link">
-<i class="fa-solid fa-users"></i>
-Referidos
-</a>
-
-<a href="#historial" class="sidebar-link">
-<i class="fa-solid fa-file-lines"></i>
-Historial
-</a>
-
-<a href="#retiros" class="sidebar-link">
-<i class="fa-solid fa-money-bill-transfer"></i>
-Retiros
-</a>
-
-<a href="#soporte" class="sidebar-link">
-<i class="fa-solid fa-headset"></i>
-Soporte
-</a>
-
-<!-- BALANCE QUICK -->
-
-<div class="glass rounded-3xl p-6 mt-8">
-
-<p class="text-xs uppercase tracking-[3px] text-slate-500 mb-3">
-Balance Total
-</p>
-
-<h1 class="text-3xl font-black">
-
-L.
-<span id="balanceTotal">
-0
-</span>
-
-</h1>
-
-<div class="flex items-center gap-2 mt-4">
-
-<div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-
-<p class="text-green-400 text-xs uppercase tracking-[3px]">
-Cuenta Operativa
-</p>
-
-</div>
-
-</div>
-
-<!-- LOGOUT -->
-
-<div class="mt-8">
-
-<button
-id="logoutBtn"
-class="w-full h-14 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 uppercase tracking-[3px] text-xs hover:bg-red-500/20 transition"
->
-
-<i class="fa-solid fa-right-from-bracket mr-2"></i>
-
-Cerrar Sesión
-
-</button>
-
-</div>
-
-</div>
-
-<!-- ====================================================== -->
-<!-- DASHBOARD -->
-<!-- ====================================================== -->
-
-<section
-id="dashboard"
-class="hidden mainContent"
->
-
-<!-- ====================================================== -->
-<!-- TOPBAR -->
-<!-- ====================================================== -->
-
-<div class="topbar">
-
-<div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-
-<!-- LEFT -->
-
-<div>
-
-<h2 class="text-2xl font-black">
-Panel Institucional
-</h2>
-
-<p class="text-slate-500 text-sm mt-1">
-Administra tus inversiones y ganancias
-</p>
-
-</div>
-
-<!-- RIGHT -->
-
-<div class="flex items-center gap-4">
-
-<!-- ALERT -->
-
-<button class="w-12 h-12 rounded-2xl glass flex items-center justify-center relative">
-
-<i class="fa-solid fa-bell"></i>
-
-<div class="w-2 h-2 rounded-full bg-red-500 absolute top-3 right-3"></div>
-
-</button>
-
-<!-- SECURITY -->
-
-<div class="glass px-5 h-12 rounded-2xl flex items-center gap-3">
-
-<div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-
-<p class="text-xs uppercase tracking-[3px] text-green-400">
-Cuenta Segura
-</p>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- ====================================================== -->
-<!-- HERO -->
-<!-- ====================================================== -->
-
-<div
-id="inicio"
-class="max-w-7xl mx-auto px-6 py-10"
->
-
-<div class="grid lg:grid-cols-2 gap-10 items-center">
-
-<!-- LEFT -->
-
-<div>
-
-<p class="uppercase tracking-[5px] text-yellow-400 text-xs mb-5">
-FINTECH • DIGITAL CAPITAL • SMART INVESTMENT
-</p>
-
-<h1 class="heroTitle text-5xl lg:text-6xl font-black leading-tight mb-8">
-
-Haz crecer tu
-<span class="text-yellow-400">
-capital
-</span>
-
-de forma inteligente.
-
-</h1>
-
-<p class="text-slate-400 text-lg leading-relaxed mb-10">
-
-Gestiona inversiones,
-monitorea ganancias,
-controla tus retiros
-y escala tu capital
-desde una plataforma profesional.
-
-</p>
-
-<!-- QUICK STATS -->
-
-<div class="grid grid-cols-2 gap-5">
-
-<div class="glass rounded-3xl p-6">
-
-<p class="text-xs uppercase tracking-[3px] text-slate-500 mb-2">
-Rentabilidad
-</p>
-
-<h2 class="text-4xl font-black text-yellow-400">
-10%
-</h2>
-
-<p class="text-slate-500 text-sm mt-2">
-Mensual fija
-</p>
-
-</div>
-
-<div class="glass rounded-3xl p-6">
-
-<p class="text-xs uppercase tracking-[3px] text-slate-500 mb-2">
-Referidos
-</p>
-
-<h2 class="text-4xl font-black text-green-400">
-5%
-</h2>
-
-<p class="text-slate-500 text-sm mt-2">
-Bono directo
-</p>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- RIGHT -->
-
-<div>
-
-<div class="glass rounded-[35px] p-8">
-
-<div class="flex justify-between items-center mb-10">
-
-<div>
-
-<p class="text-slate-500 uppercase tracking-[3px] text-xs mb-3">
-Balance Total Disponible
-</p>
-
-<h1 class="text-5xl font-black">
-
-L.
-<span id="balanceHero">
-0
-</span>
-
-</h1>
-
-</div>
-
-<div
-id="estadoBox"
-class="bg-yellow-500/10 text-yellow-400 px-5 py-3 rounded-2xl text-sm font-bold"
->
-PENDIENTE
-</div>
-
-</div>
-
-<!-- CHART -->
-
-<div class="bg-[#0b1017] border border-[#1f2937] rounded-3xl p-5">
-
-<canvas id="grafico" height="120"></canvas>
-
-</div>
-
-<!-- BOTTOM -->
-
-<div class="grid grid-cols-3 gap-4 mt-6">
-
-<div class="bg-[#0b1017] rounded-2xl p-4 border border-[#1f2937]">
-
-<p class="text-[10px] uppercase tracking-[2px] text-slate-500 mb-2">
-Capital
-</p>
-
-<h3 class="font-black text-xl">
-
-L.
-<span id="capital">
-0
-</span>
-
-</h3>
-
-</div>
-
-<div class="bg-[#0b1017] rounded-2xl p-4 border border-[#1f2937]">
-
-<p class="text-[10px] uppercase tracking-[2px] text-slate-500 mb-2">
-Ganancias
-</p>
-
-<h3 class="font-black text-xl text-yellow-400">
-
-L.
-<span id="ganancia">
-0
-</span>
-
-</h3>
-
-</div>
-
-<div class="bg-[#0b1017] rounded-2xl p-4 border border-[#1f2937]">
-
-<p class="text-[10px] uppercase tracking-[2px] text-slate-500 mb-2">
-Referidos
-</p>
-
-<h3 class="font-black text-xl text-green-400">
-
-L.
-<span id="referido">
-0
-</span>
-
-</h3>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- ====================================================== -->
-<!-- RESUMEN FINANCIERO -->
-<!-- ====================================================== -->
-
-<div
-id="balance"
-class="sectionBox max-w-7xl mx-auto px-6"
->
-
-<div class="mb-10">
-
-<h2 class="text-4xl font-black">
-Resumen Financiero
-</h2>
-
-<p class="text-slate-500 mt-2">
-Visualiza el estado completo de tu cuenta institucional.
-</p>
-
-</div>
-
-<div class="marketGrid">
-<!-- ====================================================== -->
-<!-- CARDS FINANCIERAS -->
-<!-- ====================================================== -->
-
-<!-- CAPITAL -->
-
-<div class="glass rounded-[30px] p-8 card">
-
-<div class="flex justify-between items-start mb-8">
-
-<div>
-
-<p class="uppercase tracking-[3px] text-xs text-slate-500 mb-2">
-Capital Activo
-</p>
-
-<h1 class="text-4xl font-black">
-
-L.
-<span id="capitalCard">
-0
-</span>
-
-</h1>
-
-</div>
-
-<div class="w-14 h-14 rounded-2xl bg-yellow-500/10 flex items-center justify-center text-yellow-400 text-2xl">
-<i class="fa-solid fa-chart-line"></i>
-</div>
-
-</div>
-
-<div class="flex items-center gap-2">
-
-<div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-
-<p class="text-green-400 text-xs uppercase tracking-[3px]">
-Cuenta Operativa
-</p>
-
-</div>
-
-</div>
-
-<!-- GANANCIAS -->
-
-<div class="glass rounded-[30px] p-8 card">
-
-<div class="flex justify-between items-start mb-8">
-
-<div>
-
-<p class="uppercase tracking-[3px] text-xs text-slate-500 mb-2">
-Ganancia Mensual
-</p>
-
-<h1 class="text-4xl font-black text-yellow-400">
-
-L.
-<span id="gananciaCard">
-0
-</span>
-
-</h1>
-
-</div>
-
-<div class="w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-400 text-2xl">
-<i class="fa-solid fa-wallet"></i>
-</div>
-
-</div>
-
-<p
-id="fechaPago"
-class="text-xs uppercase tracking-[3px] text-slate-500"
->
-Próximo pago: 01 de cada mes
-</p>
-
-</div>
-
-<!-- REFERIDOS -->
-
-<div class="glass rounded-[30px] p-8 card">
-
-<div class="flex justify-between items-start mb-8">
-
-<div>
-
-<p class="uppercase tracking-[3px] text-xs text-slate-500 mb-2">
-Referidos Generados
-</p>
-
-<h1 class="text-4xl font-black text-green-400">
-
-L.
-<span id="referidoCard">
-0
-</span>
-
-</h1>
-
-</div>
-
-<div class="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 text-2xl">
-<i class="fa-solid fa-users"></i>
-</div>
-
-</div>
-
-<p class="text-xs uppercase tracking-[3px] text-slate-500">
-BONO DIRECTO DEL 5%
-</p>
-
-</div>
-
-<!-- ESTADO -->
-
-<div class="glass rounded-[30px] p-8 card">
-
-<div class="flex justify-between items-start mb-8">
-
-<div>
-
-<p class="uppercase tracking-[3px] text-xs text-slate-500 mb-2">
-Estado de Cuenta
-</p>
-
-<h1
-id="estado"
-class="text-2xl font-black text-yellow-400"
->
-PENDIENTE
-</h1>
-
-</div>
-
-<div class="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400 text-2xl">
-<i class="fa-solid fa-shield-halved"></i>
-</div>
-
-</div>
-
-<p class="text-xs uppercase tracking-[3px] text-slate-500">
-ACTIVACIÓN ADMINISTRATIVA
-</p>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- ====================================================== -->
-<!-- INVERSIONES + REFERIDOS -->
-<!-- ====================================================== -->
-
-<div
-id="inversiones"
-class="sectionBox max-w-7xl mx-auto px-6"
->
-
-<div class="grid lg:grid-cols-2 gap-8">
-
-<!-- ====================================================== -->
-<!-- NUEVA INVERSIÓN -->
-<!-- ====================================================== -->
-
-<div class="glass rounded-[35px] p-10">
-
-<div class="flex justify-between items-center mb-10">
-
-<div>
-
-<h2 class="text-4xl font-black">
-
-Nueva
-<span class="text-yellow-400">
-Inversión
-</span>
-
-</h2>
-
-<p class="text-slate-500 mt-2">
-Solicita una nueva inversión institucional.
-</p>
-
-</div>
-
-<div class="w-16 h-16 rounded-3xl bg-yellow-500/10 flex items-center justify-center text-3xl">
-<i class="fa-solid fa-money-bill-trend-up"></i>
-</div>
-
-</div>
-
-<div class="space-y-5">
-
-<div>
-
-<label class="text-xs uppercase tracking-[3px] text-slate-500 mb-3 block">
-Cantidad a invertir
-</label>
-
-<input
-type="number"
-id="cantidad"
-placeholder="Ejemplo: 10000"
-class="input"
-/>
-
-</div>
-
-<!-- PREVIEW -->
-
-<div class="glass rounded-3xl p-6 border border-yellow-500/10">
-
-<div class="flex justify-between items-center mb-4">
-
-<p class="text-slate-400">
-Rentabilidad mensual
-</p>
-
-<h3 class="text-yellow-400 font-black text-xl">
-10%
-</h3>
-
-</div>
-
-<div class="flex justify-between items-center">
-
-<p class="text-slate-400">
-Ganancia aproximada
-</p>
-
-<h3
-id="previewGanancia"
-class="text-green-400 font-black text-2xl"
->
-L.0
-</h3>
-
-</div>
-
-</div>
-
-<!-- ALERT -->
-
-<div class="glass rounded-3xl p-5 border border-yellow-500/10">
-
-<p class="text-yellow-400 uppercase tracking-[3px] text-xs mb-3">
-Importante
-</p>
-
-<p class="text-slate-400 text-sm leading-relaxed">
-
-Tu inversión será revisada
-y aprobada manualmente
-por un administrador institucional.
-
-</p>
-
-</div>
-
-<button
-id="invertirBtn"
-class="yellow-btn w-full h-14 rounded-2xl uppercase tracking-[4px]"
->
-Solicitar Inversión
-</button>
-
-</div>
-
-</div>
-
-<!-- ====================================================== -->
-<!-- REFERIDOS -->
-<!-- ====================================================== -->
-
-<div
-id="referidos"
-class="glass rounded-[35px] p-10"
->
-
-<div class="flex justify-between items-center mb-10">
-
-<div>
-
-<h2 class="text-4xl font-black">
-
-Programa de
-<span class="text-yellow-400">
-Referidos
-</span>
-
-</h2>
-
-<p class="text-slate-500 mt-2">
-Invita socios y gana automáticamente.
-</p>
-
-</div>
-
-<div class="w-16 h-16 rounded-3xl bg-green-500/10 flex items-center justify-center text-3xl">
-<i class="fa-solid fa-user-plus"></i>
-</div>
-
-</div>
-
-<div class="space-y-5">
-
-<div>
-
-<label class="text-xs uppercase tracking-[3px] text-slate-500 mb-3 block">
-Tu enlace exclusivo
-</label>
-
-<input
-type="text"
-id="refLink"
-readonly
-class="input"
-/>
-
-</div>
-
-<button
-id="copyBtn"
-class="yellow-btn w-full h-14 rounded-2xl uppercase tracking-[4px]"
->
-Copiar Link
-</button>
-
-<!-- STATS -->
-
-<div class="grid grid-cols-2 gap-5 mt-5">
-
-<div class="glass rounded-3xl p-5 border border-[#1f2937]">
-
-<p class="text-xs uppercase tracking-[3px] text-slate-500 mb-2">
-Usuarios
-</p>
-
-<h3
-id="totalReferidos"
-class="text-3xl font-black"
->
-0
-</h3>
-
-</div>
-
-<div class="glass rounded-3xl p-5 border border-[#1f2937]">
-
-<p class="text-xs uppercase tracking-[3px] text-slate-500 mb-2">
-Ganancias
-</p>
-
-<h3
-id="gananciaReferidos"
-class="text-3xl font-black text-green-400"
->
-L.0
-</h3>
-
-</div>
-
-</div>
-
-<!-- INFO -->
-
-<div class="glass rounded-3xl p-6 border border-green-500/10">
-
-<p class="text-green-400 uppercase tracking-[3px] text-xs mb-3">
-Sistema Automático
-</p>
-
-<p class="text-slate-400 leading-relaxed text-sm">
-
-Cada vez que un usuario
-realice una inversión aprobada,
-obtendrás automáticamente
-el 5% de comisión directa.
-
-</p>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- ====================================================== -->
-<!-- HISTORIAL -->
-<!-- ====================================================== -->
-
-<div
-id="historial"
-class="sectionBox max-w-7xl mx-auto px-6 pb-20"
->
-
-<div class="flex items-center justify-between mb-10 flex-wrap gap-4">
-
-<div>
-
-<h2 class="text-4xl font-black">
-Historial Financiero
-</h2>
-
-<p class="text-slate-500 mt-2">
-Registro completo de movimientos y operaciones.
-</p>
-
-</div>
-
-</div>
-
-<div class="glass rounded-[35px] p-8 tableWrap">
-
-<table class="w-full min-w-[900px]">
-
-<thead>
-
-<tr class="border-b border-[#1f2937] text-left">
-
-<th class="pb-5 text-xs uppercase tracking-[3px] text-slate-500">
-ID
-</th>
-
-<th class="pb-5 text-xs uppercase tracking-[3px] text-slate-500">
-Fecha
-</th>
-
-<th class="pb-5 text-xs uppercase tracking-[3px] text-slate-500">
-Tipo
-</th>
-
-<th class="pb-5 text-xs uppercase tracking-[3px] text-slate-500">
-Monto
-</th>
-
-<th class="pb-5 text-xs uppercase tracking-[3px] text-slate-500">
-Estado
-</th>
-
-</tr>
-
-</thead>
-
-<tbody id="tablaHistorial">
-
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
-<!-- ====================================================== -->
-<!-- SCRIPT FINAL -->
-<!-- ====================================================== -->
-
-<script>
-
-/* ====================================================== */
-/* PREVIEW GANANCIA */
-/* ====================================================== */
-
-document.getElementById("cantidad")
-.addEventListener("input",(e)=>{
-
-const valor = Number(e.target.value || 0);
-
-const profit = valor * 0.10;
-
-document.getElementById("previewGanancia").innerText =
-"L." + profit.toLocaleString("es-HN");
-
-});
-
-/* ====================================================== */
-/* COPIAR LINK */
-/* ====================================================== */
-
-document.getElementById("copyBtn")
-.onclick = ()=>{
-
-navigator.clipboard.writeText(
-document.getElementById("refLink").value
-);
-
-alert("Link copiado correctamente");
-
-};
-
-/* ====================================================== */
 /* LOGOUT */
-/* ====================================================== */
 
-document.getElementById("logoutBtn")
-.onclick = ()=>{
+document.getElementById("logoutBtn").onclick = async()=>{
 
-signOut(auth);
+    await signOut(auth);
 
-};
+    window.location.reload();
 
-/* ====================================================== */
-/* SIDEBAR ACTIVE */
-/* ====================================================== */
-
-const links =
-document.querySelectorAll(".sidebar-link");
-
-links.forEach(link=>{
-
-link.addEventListener("click",()=>{
-
-links.forEach(l=>
-l.classList.remove("active")
-);
-
-link.classList.add("active");
-
-});
-
-});
+}
 
 </script>
-
+<!-- Elfsight Background Music | Untitled Background Music --> <script src="https://elfsightcdn.com/platform.js" async></script> <div class="elfsight-app-fcf12be2-92ff-4ec1-ab53-375a93d07de8" data-elfsight-app-lazy></div>
+<!-- Elfsight WhatsApp Chat | Untitled WhatsApp Chat --> <script src="https://elfsightcdn.com/platform.js" async></script> <div class="elfsight-app-ca91fc48-234a-4779-b722-75b9ee36451f" data-elfsight-app-lazy></div>
 </body>
 </html>
