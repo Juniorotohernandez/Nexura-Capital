@@ -23,6 +23,8 @@ body{
     overflow-x:hidden;
 }
 
+/* FONDO */
+
 .bg{
     position:fixed;
     inset:0;
@@ -59,6 +61,8 @@ body{
     z-index:-2;
 }
 
+/* LOGIN */
+
 .auth-container{
     width:100%;
     min-height:100vh;
@@ -70,11 +74,11 @@ body{
 
 .auth-box{
     width:100%;
-    max-width:480px;
-    background:rgba(15,23,42,.85);
+    max-width:450px;
+    background:rgba(15,23,42,.8);
+    border:1px solid rgba(255,255,255,.05);
     border-radius:30px;
     padding:35px;
-    border:1px solid rgba(255,255,255,.05);
     backdrop-filter:blur(15px);
     box-shadow:0 20px 50px rgba(0,0,0,.5);
 }
@@ -90,6 +94,7 @@ body{
     border-radius:50%;
     border:3px solid gold;
     object-fit:cover;
+    box-shadow:0 0 30px rgba(255,215,0,.4);
 }
 
 .logo h1{
@@ -105,24 +110,28 @@ body{
 
 .tabs{
     display:flex;
-    margin-bottom:25px;
     gap:10px;
+    margin-bottom:25px;
 }
 
 .tab{
     flex:1;
     padding:14px;
     border:none;
-    border-radius:14px;
+    border-radius:12px;
     background:#0f172a;
     color:white;
     cursor:pointer;
-    font-weight:700;
+    font-weight:600;
 }
 
 .tab.active{
     background:gold;
     color:#07152d;
+}
+
+.hidden{
+    display:none;
 }
 
 .input-group{
@@ -143,6 +152,7 @@ body{
     background:#0f172a;
     color:white;
     outline:none;
+    font-size:14px;
 }
 
 .btn{
@@ -155,25 +165,179 @@ body{
     font-weight:800;
     cursor:pointer;
     transition:.3s;
+    margin-top:10px;
 }
 
 .btn:hover{
     transform:translateY(-2px);
 }
 
-.form{
+/* DASHBOARD */
+
+.dashboard{
     display:none;
 }
 
-.form.active{
-    display:block;
+header{
+    width:100%;
+    padding:20px 30px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:rgba(2,8,23,.9);
+    border-bottom:1px solid rgba(255,255,255,.05);
+    backdrop-filter:blur(15px);
+    position:sticky;
+    top:0;
+    z-index:999;
 }
 
-.loading{
-    display:none;
-    text-align:center;
+.header-logo{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.header-logo img{
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    border:2px solid gold;
+}
+
+.header-logo h2{
     color:gold;
-    margin-top:15px;
+}
+
+.container{
+    width:95%;
+    max-width:1450px;
+    margin:auto;
+    padding:30px 0;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:rgba(15,23,42,.8);
+    border-radius:25px;
+    padding:25px;
+    border:1px solid rgba(255,255,255,.05);
+}
+
+.card h4{
+    color:#94a3b8;
+    margin-bottom:10px;
+}
+
+.card h1{
+    color:gold;
+    font-size:34px;
+}
+
+.section{
+    margin-top:25px;
+    background:rgba(15,23,42,.8);
+    border-radius:25px;
+    padding:25px;
+    border:1px solid rgba(255,255,255,.05);
+}
+
+.section h2{
+    color:gold;
+    margin-bottom:20px;
+}
+
+.ref-box{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.ref-box input{
+    flex:1;
+    padding:16px;
+    border:none;
+    border-radius:14px;
+    background:#0f172a;
+    color:white;
+}
+
+.copy-btn{
+    padding:16px 20px;
+    border:none;
+    border-radius:14px;
+    background:gold;
+    color:#07152d;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.table-box{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    min-width:700px;
+    border-collapse:collapse;
+}
+
+th{
+    background:#0f172a;
+    color:gold;
+    padding:15px;
+    text-align:left;
+}
+
+td{
+    padding:15px;
+    border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.badge{
+    padding:7px 14px;
+    border-radius:40px;
+    background:rgba(34,197,94,.15);
+    color:#22c55e;
+    font-size:12px;
+}
+
+.pending{
+    background:rgba(234,179,8,.15);
+    color:#facc15;
+}
+
+.logout{
+    background:red;
+    color:white;
+    margin-top:25px;
+}
+
+/* WHATSAPP */
+
+.whatsapp{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    width:65px;
+    height:65px;
+    border-radius:50%;
+    background:#25d366;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-decoration:none;
+    box-shadow:0 0 25px rgba(37,211,102,.5);
+    z-index:999;
+}
+
+.whatsapp img{
+    width:34px;
 }
 
 </style>
@@ -185,137 +349,252 @@ body{
 <div class="blur1"></div>
 <div class="blur2"></div>
 
-<div class="auth-container">
+<!-- LOGIN / REGISTRO -->
 
-<div class="auth-box">
+<div class="auth-container" id="authContainer">
 
-<div class="logo">
+    <div class="auth-box">
 
-<img src="Nexura_Capital_logo.png">
+        <div class="logo">
+            <img src="img/Nexura_Capital_logo.png">
+            <h1>NEXURA</h1>
+            <p>Capital Investment Platform</p>
+        </div>
 
-<h1>NEXURA</h1>
+        <div class="tabs">
+            <button class="tab active" id="loginTab">Iniciar Sesión</button>
+            <button class="tab" id="registerTab">Registro</button>
+        </div>
 
-<p>Capital Investment Platform</p>
+        <!-- LOGIN -->
 
-</div>
+        <div id="loginForm">
 
-<div class="tabs">
+            <div class="input-group">
+                <label>Correo Electrónico</label>
+                <input type="email" id="loginEmail">
+            </div>
 
-<button class="tab active" id="loginTab">
-Iniciar Sesión
-</button>
+            <div class="input-group">
+                <label>Contraseña</label>
+                <input type="password" id="loginPassword">
+            </div>
 
-<button class="tab" id="registerTab">
-Registrarse
-</button>
+            <button class="btn" id="loginBtn">
+                Entrar a Oficina Virtual
+            </button>
 
-</div>
+        </div>
 
-<!-- LOGIN -->
+        <!-- REGISTRO -->
 
-<div class="form active" id="loginForm">
+        <div id="registerForm" class="hidden">
 
-<div class="input-group">
-<label>Correo Electrónico</label>
-<input type="email" id="loginEmail">
-</div>
+            <div class="input-group">
+                <label>Nombre Completo</label>
+                <input type="text" id="registerName">
+            </div>
 
-<div class="input-group">
-<label>Contraseña</label>
-<input type="password" id="loginPassword">
-</div>
+            <div class="input-group">
+                <label>Correo Electrónico</label>
+                <input type="email" id="registerEmail">
+            </div>
 
-<button class="btn" id="loginBtn">
-Entrar
-</button>
+            <div class="input-group">
+                <label>Contraseña</label>
+                <input type="password" id="registerPassword">
+            </div>
 
-</div>
+            <div class="input-group">
+                <label>ID Referido</label>
+                <input type="text" id="referrerId" readonly>
+            </div>
 
-<!-- REGISTER -->
+            <button class="btn" id="registerBtn">
+                Crear Cuenta
+            </button>
 
-<div class="form" id="registerForm">
+        </div>
 
-<div class="input-group">
-<label>Nombre Completo</label>
-<input type="text" id="registerName">
-</div>
-
-<div class="input-group">
-<label>Correo Electrónico</label>
-<input type="email" id="registerEmail">
-</div>
-
-<div class="input-group">
-<label>Número WhatsApp</label>
-<input type="text" id="registerWhatsapp">
-</div>
-
-<div class="input-group">
-<label>Contraseña</label>
-<input type="password" id="registerPassword">
-</div>
-
-<div class="input-group">
-<label>Código de Referido</label>
-<input type="text" id="registerRef">
-</div>
-
-<button class="btn" id="registerBtn">
-Crear Cuenta
-</button>
+    </div>
 
 </div>
 
-<div class="loading" id="loading">
-Procesando...
-</div>
+<!-- DASHBOARD -->
+
+<div class="dashboard" id="dashboard">
+
+<header>
+
+    <div class="header-logo">
+        <img src="img/Nexura_Capital_logo.png">
+
+        <div>
+            <h2>NEXURA CAPITAL</h2>
+            <small>Oficina Virtual</small>
+        </div>
+    </div>
+
+    <div>
+        <small>Bienvenido</small>
+        <h3 id="userName">Usuario</h3>
+    </div>
+
+</header>
+
+<div class="container">
+
+    <div class="cards">
+
+        <div class="card">
+            <h4>Capital Invertido</h4>
+            <h1 id="capital">$0.00</h1>
+        </div>
+
+        <div class="card">
+            <h4>Ganancia Mensual 10%</h4>
+            <h1 id="monthly">$0.00</h1>
+        </div>
+
+        <div class="card">
+            <h4>Comisiones Referidos</h4>
+            <h1 id="bonus">$0.00</h1>
+        </div>
+
+        <div class="card">
+            <h4>Estado</h4>
+            <h1 id="accountStatus">Pendiente</h1>
+        </div>
+
+    </div>
+
+    <div class="section">
+
+        <h2>Link de Referido</h2>
+
+        <div class="ref-box">
+            <input type="text" id="refLink" readonly>
+
+            <button class="copy-btn" onclick="copyRef()">
+                Copiar
+            </button>
+        </div>
+
+    </div>
+
+    <div class="section">
+
+        <h2>Historial de Movimientos</h2>
+
+        <div class="table-box">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Movimiento</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+
+                <tbody id="historyTable"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <div class="section">
+
+        <h2>Historial de Referidos</h2>
+
+        <div class="table-box">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Invitado</th>
+                        <th>Inversión</th>
+                        <th>Comisión</th>
+                    </tr>
+                </thead>
+
+                <tbody id="refTable"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <button class="btn logout" id="logoutBtn">
+        Cerrar Sesión
+    </button>
 
 </div>
 
 </div>
+
+<!-- WHATSAPP -->
+
+<a class="whatsapp" href="https://wa.me/50492037877" target="_blank">
+    <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png">
+</a>
 
 <script type="module">
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
-
-getAuth,
-signInWithEmailAndPassword,
-createUserWithEmailAndPassword
-
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-
-getDatabase,
-ref,
-set,
-get,
-update
-
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    getDatabase,
+    ref,
+    set,
+    get,
+    push,
+    onValue
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 /* FIREBASE */
 
 const firebaseConfig = {
 
-apiKey: "AIzaSyBDSF0i002CE37zDx9oyc1tnWscLCmOdPE",
 
-authDomain: "panel-multinivel.firebaseapp.com",
+  apiKey: "AIzaSyBDSF0i002CE37zDx9oyc1tnWscLCmOdPE",
 
-databaseURL: "https://panel-multinivel-default-rtdb.firebaseio.com",
 
-projectId: "panel-multinivel",
+  authDomain: "panel-multinivel.firebaseapp.com",
 
-storageBucket: "panel-multinivel.firebasestorage.app",
 
-messagingSenderId: "57838273686",
+  databaseURL: "https://panel-multinivel-default-rtdb.firebaseio.com",
 
-appId: "1:57838273686:web:a6ec68314165c0ec23aeb7"
+
+  projectId: "panel-multinivel",
+
+
+  storageBucket: "panel-multinivel.firebasestorage.app",
+
+
+  messagingSenderId: "57838273686",
+
+
+  appId: "1:57838273686:web:a6ec68314165c0ec23aeb7",
+
+
+  measurementId: "G-BS7ZT4B5VJ"
+
 
 };
 
@@ -325,125 +604,43 @@ const auth = getAuth(app);
 
 const db = getDatabase(app);
 
-/* EMPRESA REFERIDO */
-
-const COMPANY_REF = "NEXURA-CAPITAL";
-
-/* REFERIDO URL */
-
-const urlParams = new URLSearchParams(window.location.search);
-
-const refCode = urlParams.get("ref");
-
-if(refCode){
-
-document.getElementById("registerRef").value = refCode;
-
-}
-
 /* TABS */
 
 const loginTab = document.getElementById("loginTab");
-
 const registerTab = document.getElementById("registerTab");
 
 const loginForm = document.getElementById("loginForm");
-
 const registerForm = document.getElementById("registerForm");
 
 loginTab.onclick = ()=>{
 
-loginTab.classList.add("active");
-registerTab.classList.remove("active");
+    loginTab.classList.add("active");
+    registerTab.classList.remove("active");
 
-loginForm.classList.add("active");
-registerForm.classList.remove("active");
+    loginForm.classList.remove("hidden");
+    registerForm.classList.add("hidden");
 
 }
 
 registerTab.onclick = ()=>{
 
-registerTab.classList.add("active");
-loginTab.classList.remove("active");
+    registerTab.classList.add("active");
+    loginTab.classList.remove("active");
 
-registerForm.classList.add("active");
-loginForm.classList.remove("active");
-
-}
-
-/* LOGIN */
-
-document.getElementById("loginBtn").onclick = async()=>{
-
-const email =
-document.getElementById("loginEmail").value.trim();
-
-const password =
-document.getElementById("loginPassword").value.trim();
-
-if(!email || !password){
-
-alert("Completa todos los campos");
-return;
+    registerForm.classList.remove("hidden");
+    loginForm.classList.add("hidden");
 
 }
 
-try{
+/* REFERIDO */
 
-document.getElementById("loading").style.display = "block";
+const params = new URLSearchParams(window.location.search);
 
-const userCredential =
-await signInWithEmailAndPassword(
-auth,
-email,
-password
-);
+const referralCode = params.get("ref");
 
-const uid = userCredential.user.uid;
+if(referralCode){
 
-const snapshot =
-await get(ref(db,"users/" + uid));
-
-if(!snapshot.exists()){
-
-alert("Cuenta no encontrada");
-
-return;
-
-}
-
-const data = snapshot.val();
-
-if(data.active !== true){
-
-alert(
-"Tu cuenta está pendiente de activación."
-);
-
-return;
-
-}
-
-if(!data.invested || data.invested < 1500){
-
-alert(
-"Debes tener una inversión mínima de L1500."
-);
-
-return;
-
-}
-
-window.location.href =
-"dashboard.html?uid=" + uid;
-
-}catch(error){
-
-alert(error.message);
-
-}
-
-document.getElementById("loading").style.display = "none";
+    document.getElementById("referrerId").value = referralCode;
 
 }
 
@@ -451,138 +648,322 @@ document.getElementById("loading").style.display = "none";
 
 document.getElementById("registerBtn").onclick = async()=>{
 
-const name =
-document.getElementById("registerName").value.trim();
+    const name = document.getElementById("registerName").value;
 
-const email =
-document.getElementById("registerEmail").value.trim();
+    const email = document.getElementById("registerEmail").value;
 
-const whatsapp =
-document.getElementById("registerWhatsapp").value.trim();
+    const password = document.getElementById("registerPassword").value;
 
-const password =
-document.getElementById("registerPassword").value.trim();
+    const referrer = document.getElementById("referrerId").value;
 
-let referral =
-document.getElementById("registerRef").value.trim();
+    if(!name || !email || !password){
 
-if(
-!name ||
-!email ||
-!whatsapp ||
-!password
-){
+        alert("Completa todos los campos");
 
-alert("Completa todos los campos");
-return;
+        return;
+    }
+
+    try{
+
+        const userCredential =
+        await createUserWithEmailAndPassword(auth,email,password);
+
+        const uid = userCredential.user.uid;
+
+        await set(ref(db,"users/" + uid),{
+
+            uid:uid,
+            name:name,
+            email:email,
+
+            invested:0,
+            refBonus:0,
+
+            active:false,
+
+            status:"Pendiente",
+
+            referrer:referrer || "",
+
+            createdAt:new Date().toLocaleString("es-HN")
+
+        });
+
+        /* REFERIDOS */
+
+        if(referrer){
+
+            await push(ref(db,"referrals/" + referrer),{
+
+                uid:uid,
+                name:name,
+                invested:0,
+                commission:0,
+                status:"Pendiente",
+                date:new Date().toLocaleString("es-HN")
+
+            });
+
+        }
+
+        alert("Cuenta creada correctamente");
+
+    }catch(error){
+
+        console.error(error);
+
+        alert(error.message);
+
+    }
 
 }
 
-if(referral === ""){
+/* LOGIN */
 
-referral = COMPANY_REF;
+document.getElementById("loginBtn").onclick = async()=>{
+
+    const email =
+    document.getElementById("loginEmail").value;
+
+    const password =
+    document.getElementById("loginPassword").value;
+
+    if(!email || !password){
+
+        alert("Completa todos los campos");
+
+        return;
+    }
+
+    try{
+
+        await signInWithEmailAndPassword(auth,email,password);
+
+    }catch(error){
+
+        console.error(error);
+
+        alert(error.message);
+
+    }
 
 }
 
-try{
+/* SESSION */
 
-document.getElementById("loading").style.display = "block";
+onAuthStateChanged(auth, async(user)=>{
 
-const userCredential =
-await createUserWithEmailAndPassword(
-auth,
-email,
-password
-);
+    if(user){
 
-const uid = userCredential.user.uid;
+        try{
 
-await set(ref(db,"users/" + uid),{
+            const uid = user.uid;
 
-uid:uid,
+            const snapshot =
+            await get(ref(db,"users/" + uid));
 
-name:name,
+            if(!snapshot.exists()){
 
-email:email,
+                alert("Usuario no encontrado");
 
-whatsapp:whatsapp,
+                return;
+            }
 
-referralCode:uid,
+            const data = snapshot.val();
 
-referredBy:referral,
+            document.getElementById("authContainer").style.display =
+            "none";
 
-active:false,
+            document.getElementById("dashboard").style.display =
+            "block";
 
-pending:true,
+            document.getElementById("userName").innerHTML =
+            data.name || "Usuario";
 
-invested:0,
+            const invested =
+            Number(data.invested) || 0;
 
-refBonus:0,
+            const refBonus =
+            Number(data.refBonus) || 0;
 
-createdAt:Date.now(),
+            document.getElementById("capital").innerHTML =
+            "$" + invested.toFixed(2);
 
-status:"Pendiente"
+            /* SI ESTA ACTIVO */
+
+            if(data.active === true){
+
+                document.getElementById("monthly").innerHTML =
+                "$" + (invested * 0.10).toFixed(2);
+
+                document.getElementById("accountStatus").innerHTML =
+                "Activo";
+
+            }else{
+
+                document.getElementById("monthly").innerHTML =
+                "Pendiente";
+
+                document.getElementById("accountStatus").innerHTML =
+                "Pendiente";
+
+            }
+
+            document.getElementById("bonus").innerHTML =
+            "$" + refBonus.toFixed(2);
+
+            document.getElementById("refLink").value =
+            window.location.origin +
+            window.location.pathname +
+            "?ref=" + uid;
+
+            loadHistory(uid);
+
+            loadRefs(uid);
+
+        }catch(error){
+
+            console.error(error);
+
+            alert(error.message);
+
+        }
+
+    }
 
 });
 
-/* SI TIENE REFERIDO */
+/* HISTORIAL */
 
-if(referral !== COMPANY_REF){
+function loadHistory(uid){
 
-const refSnapshot =
-await get(ref(db,"users"));
+    const historyRef =
+    ref(db,"movements/" + uid);
 
-if(refSnapshot.exists()){
+    onValue(historyRef,(snapshot)=>{
 
-refSnapshot.forEach(async(child)=>{
+        const table =
+        document.getElementById("historyTable");
 
-const userData = child.val();
+        table.innerHTML = "";
 
-if(userData.referralCode === referral){
+        if(snapshot.exists()){
 
-await update(ref(db,
-"referrals/" + child.key + "/" + uid),{
+            snapshot.forEach((child)=>{
 
-name:name,
+                const data = child.val();
 
-email:email,
+                table.innerHTML += `
 
-date:new Date()
-.toLocaleDateString("es-HN"),
+                <tr>
+                    <td>${data.date}</td>
+                    <td>${data.type}</td>
+                    <td>$${data.amount}</td>
+                    <td>
+                        <span class="badge">
+                        ${data.status}
+                        </span>
+                    </td>
+                </tr>
 
-status:"Pendiente",
+                `;
 
-invested:0,
+            });
 
-commission:0
+        }else{
 
-});
+            table.innerHTML = `
+
+            <tr>
+                <td colspan="4">
+                No hay movimientos todavía
+                </td>
+            </tr>
+
+            `;
+
+        }
+
+    });
 
 }
 
-});
+/* REFERIDOS */
+
+function loadRefs(uid){
+
+    const refsRef =
+    ref(db,"referrals/" + uid);
+
+    onValue(refsRef,(snapshot)=>{
+
+        const table =
+        document.getElementById("refTable");
+
+        table.innerHTML = "";
+
+        if(snapshot.exists()){
+
+            snapshot.forEach((child)=>{
+
+                const data = child.val();
+
+                table.innerHTML += `
+
+                <tr>
+                    <td>${data.date}</td>
+                    <td>${data.name}</td>
+                    <td>$${data.invested}</td>
+                    <td>$${data.commission}</td>
+                </tr>
+
+                `;
+
+            });
+
+        }else{
+
+            table.innerHTML = `
+
+            <tr>
+                <td colspan="4">
+                No hay referidos todavía
+                </td>
+            </tr>
+
+            `;
+
+        }
+
+    });
 
 }
 
+/* COPIAR */
+
+window.copyRef = async()=>{
+
+    const input =
+    document.getElementById("refLink");
+
+    await navigator.clipboard.writeText(input.value);
+
+    alert("Link copiado");
+
 }
 
-alert(
-"Cuenta creada correctamente. Espera activación del administrador."
-);
+/* LOGOUT */
 
-location.reload();
+document.getElementById("logoutBtn").onclick = async()=>{
 
-}catch(error){
+    await signOut(auth);
 
-alert(error.message);
-
-}
-
-document.getElementById("loading").style.display = "none";
+    window.location.reload();
 
 }
 
 </script>
-
+<!-- Elfsight Background Music | Untitled Background Music --> <script src="https://elfsightcdn.com/platform.js" async></script> <div class="elfsight-app-fcf12be2-92ff-4ec1-ab53-375a93d07de8" data-elfsight-app-lazy></div>
+<!-- Elfsight WhatsApp Chat | Untitled WhatsApp Chat --> <script src="https://elfsightcdn.com/platform.js" async></script> <div class="elfsight-app-ca91fc48-234a-4779-b722-75b9ee36451f" data-elfsight-app-lazy></div>
 </body>
 </html>
